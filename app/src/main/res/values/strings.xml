@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Bluetooth_Radio</string>
+    <string name="edit_message">Enter a message</string>
+    <string name="button_send">Send</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_search">Search</string>
+    <string name="Bluetooth_item_button">reRadio</string>
+    <string name="com.twitter.sdk.android.CONSUMER_KEY">EWMwVTKywkJqghydwOPcFIQOj</string>
+    <string name="com.twitter.sdk.android.CONSUMER_SECRET">	J8Njlzytde5XsP0YDK7CeuJeQSJRxygEezL5y7caXG69n2zCM8
+</string>
+</resources>

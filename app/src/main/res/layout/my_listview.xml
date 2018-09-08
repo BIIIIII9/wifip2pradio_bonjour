@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Bluetooth_item_box"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="3dp"-->
+        <!--android:background="#808080" />-->
+    <!-- 主显示布局 -->
+
+        <!-- 第一部分布局 -->
+        <LinearLayout
+            android:id="@+id/Bluetooth_item_topBox"
+            android:layout_margin="28dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+            <!-- 头像 -->
+            <!--<LinearLayout-->
+                <!--android:layout_marginLeft="10dp"-->
+                <!--android:layout_marginRight="10dp"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:orientation="vertical" >-->
+                <!-- 昵称 -->
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:id="@+id/Bluetooth_item_img"/>
+                <TextView
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:id="@+id/Bluetooth_item_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="15sp" />
+                <!-- 时间 -->
+                <TextView
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:id="@+id/Bluetooth_item_time"
+                    android:layout_marginTop="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"/>
+            <!--</LinearLayout>-->
+        </LinearLayout>
+
+        <!-- 第二部分布局 -->
+        <LinearLayout
+            android:id="@+id/Bluetooth_item_bottomBox"
+            android:layout_marginLeft="18dp"
+            android:layout_marginRight="18dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="right"
+            >
+            <!-- 内容 -->
+            <TextView
+                android:id="@+id/Bluetooth_item_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:lineSpacingExtra="8dp"
+                android:autoLink="email|phone|web"
+                android:textIsSelectable="true"
+                />
+
+            <Button
+
+                android:id="@+id/Bluetooth_item_button"
+                android:text="@string/Bluetooth_item_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+        </LinearLayout>
+    <!-- 分割线 -->
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="3dp"-->
+        <!--android:background="#808080" />-->
+</LinearLayout>

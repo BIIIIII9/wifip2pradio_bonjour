@@ -1,0 +1,4 @@
+#Mon Jun 11 22:16:01 CST 2018
+base.0=C\:\\Users\\Tzar\\Desktop\\Andriod\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\43
+path.0=classes.dex
+renamed.0=classes.dex
