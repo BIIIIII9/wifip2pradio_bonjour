@@ -562,16 +562,17 @@ public class MainActivity extends AppCompatActivity {
             map.put(str_text, text);
             mImgList.add(img);
             mList.add(map);
-            if(mListType==null) {
-                mListType = ListType.MAIN_LIST;
+            if(address.isEmpty()) {
+                mListType = ListType.LIST_NEARBY_PEOPLE;
+            }
+            else {
+                mListType=ListType.MAIN_LIST;
             }
             mAdapter = new MyAdapter(mListType,MainActivity.this, mList, mImgList, R.layout.my_listview, new String[]{str_address, str_time, str_text},
                     new int[]{R.id.Bluetooth_item_name, R.id.Bluetooth_item_time, R.id.Bluetooth_item_content});
         }
         MyListViewManager(String text, Bitmap img){
             this("", text, img);
-            mListType=ListType.LIST_NEARBY_PEOPLE;
-            myMainListView.getR
         }
         void star(ListView mListView) {
             mListView.setAdapter(mAdapter);
@@ -600,15 +601,19 @@ public class MainActivity extends AppCompatActivity {
         int[] mTo;
         ListType mListType;
 
-
         class ListItemView { // 自定义控件集合
             public LinearLayout box;
             public LinearLayout timeAndNameBox;
             public TextView[] textViews;
-            ImageView imageView;
+            public ImageView imageView;
             public LinearLayout contentAndButtonBox;
             public Button button_copy;
 
+        }
+        class ListItemView_people_nearby{
+            public LinearLayout bar;
+            public TextView id;
+            public ImageView img;
         }
 
         /*construction function*/
@@ -627,16 +632,18 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-           if(?)
-            return getViewForMainList();
-               else()
-                    return getViewForNearbyList;
+          switch (mListType){
+              case MAIN_LIST: return getViewForMainList(position, convertView, parent);
+              case LIST_NEARBY_PEOPLE: return getViewForNearbyList(position, convertView, parent);
+              default: return getViewForMainList(position, convertView, parent);
+          }
         }
-        private View getViewForMainList(){
+        private View getViewForMainList(final int position, View convertView, ViewGroup parent){
+
             final int mPosition = position;
             ListItemView listItemView = null;
             if (convertView == null) {
-                convertView = listContainer.inflate(R.layout.my_listview, null);//加载布局
+                convertView = listContainer.inflate(R.layout.my_listview_people_nearby, null);//加载布局
                 listItemView = new ListItemView();
                 listItemView.box = convertView.findViewById(R.id.Bluetooth_item_box);
                 listItemView.timeAndNameBox = convertView.findViewById(R.id.Bluetooth_item_topBox);
@@ -682,7 +689,27 @@ public class MainActivity extends AppCompatActivity {
             });
             return convertView;
         }
-        private View getViewForNearbyList(){}
+        private View getViewForNearbyList(final int position, View convertView, ViewGroup parent){
+            final int mPosition = position;
+            ListItemView_people_nearby listItemView = null;
+            if (convertView == null) {
+                convertView = listContainer.inflate(R.layout.my_listview, null);//加载布局
+                listItemView = new ListItemView_people_nearby();
+                listItemView.bar = convertView.findViewById(R.id.Bluetooth_item_barBox);
+                listItemView.id = convertView.findViewById(R.id.id_people_nearby);
+                listItemView.img = convertView.findViewById(R.id.img_people_nearby);
+                // 设置控件集到convertView
+                convertView.setTag(listItemView);
+            } else {
+                listItemView = (ListItemView_people_nearby) convertView.getTag();//利用缓存的View
+            }
+            Map<String, String> item = listItem.get(mPosition);
+            listItemView.id.setText(item.get(mFrom[0]));
+            listItemView.img.setImageBitmap(mImgList.get(mPosition));
+            return convertView;
+        }
+
+
     }
     public class viewAdapter extends PagerAdapter {
         public List<View> list_view;

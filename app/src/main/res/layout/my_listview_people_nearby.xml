@@ -6,7 +6,7 @@
     android:orientation="vertical"
     >
     <LinearLayout
-        android:id="@+id/Bluetooth_item_bottomBox"
+        android:id="@+id/Bluetooth_item_barBox"
         android:layout_marginLeft="18dp"
         android:layout_marginRight="18dp"
         android:layout_width="match_parent"
