@@ -59,6 +59,8 @@ public class ReceiveRadio_BLE extends Service {
     private LocalBroadcastManager myLocalBroadcastManager;
     public static final String EXTRA_CONTENT_MESSAGE_ADDRESS="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_ADDRESS";
     public static final String EXTRA_CONTENT_MESSAGE_TEXT="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_TEXT";
+    public static final String EXTRA_CONTENT_MESSAGE_USERNAME="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_USERNAME";
+    public static final String EXTRA_CONTENT_MESSAGE_FULL_USERNAME="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_FULL_USERNAME";
     private ScanCallback mLeScanCallback =
             new ScanCallback() {
                 @Override
@@ -277,6 +279,14 @@ public class ReceiveRadio_BLE extends Service {
                     Bundle bundle = new Bundle();
                     bundle.putString(EXTRA_CONTENT_MESSAGE_ADDRESS, addressMac);
                     bundle.putString(EXTRA_CONTENT_MESSAGE_TEXT, text);
+                    if(names==null||names.isEmpty()) {
+                        bundle.putString(EXTRA_CONTENT_MESSAGE_USERNAME, null);
+                        bundle.putString(EXTRA_CONTENT_MESSAGE_FULL_USERNAME, null);
+                    }
+                    else{
+                        bundle.putString(EXTRA_CONTENT_MESSAGE_USERNAME, names.get(0));
+                        bundle.putString(EXTRA_CONTENT_MESSAGE_FULL_USERNAME, names.get(1));
+                    }
                     Intent intent = new Intent(MainActivity.LocalAction_RefreshUI);
                     intent.putExtras(bundle);
                     if(isGetImage&&img!=null)

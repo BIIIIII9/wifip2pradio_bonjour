@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView myMainListView;
     private ListView listViewPeopleNearby;
     private MyListViewManager myListViewManager;
+    private MyListViewManager mySecondListViewManager;
     private TabLayout myTabLyaout;
     private ViewPager myViewPage;
     private List<View> listViews;
@@ -95,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     LocalBroadcastManager myLocalBroadcastManager;
     BroadcastReceiver myReceiver;
     boolean listViewStarFlag = false;
+    boolean secondListViewStarFlag= false;
     boolean isCheckedAddID = false;
 
 
@@ -497,9 +499,11 @@ public class MainActivity extends AppCompatActivity {
                     //TODO:Try BLE
                     String address = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_ADDRESS);
                     String text = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_TEXT);
+                    String username=bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_USERNAME);
+                    String fullusername=bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_FULL_USERNAME);
                     Log.i("onReceive", "onReceive: " + text);
-                    if(address==null||address.isEmpty()){
-
+                    if(!(username==null||username.isEmpty())){
+                        mySecondListViewManager=new MyListViewManager(username,text,bitmap);
                     }
                     if (listViewStarFlag == false) {
                         myListViewManager = new MyListViewManager(address, text, bitmap);
