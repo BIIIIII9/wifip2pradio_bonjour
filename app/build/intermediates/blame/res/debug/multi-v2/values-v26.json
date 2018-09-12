@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\Users\\kami\\Desktop\\Andriod\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v26\\values-v26.xml",
+            "outputFile": "C:\\Users\\B9\\Desktop\\BluetoothRadio\\twopage\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v26\\values-v26.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\kami\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-26.1.0.aar\\fcdb0ab4b9ac62162f435efa2cbede82\\res\\values-v26\\values-v26.xml",
+                    "source": "C:\\Users\\B9\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-26.1.0.aar\\234cb154ddf36276eabb4a5ba8ce8737\\res\\values-v26\\values-v26.xml",
                     "from": {
                         "startLines": "2,3,4,8,12,16",
                         "startColumns": "4,4,4,4,4,4",
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\kami\\.gradle\\caches\\transforms-1\\files-1.1\\design-26.1.0.aar\\ae67a1b448df3cb7ca6cb7ea0c79ecab\\res\\values-v26\\values-v26.xml",
+                    "source": "C:\\Users\\B9\\.gradle\\caches\\transforms-1\\files-1.1\\design-26.1.0.aar\\08a5e2849b10f8b43ab2d7ddfc32b10e\\res\\values-v26\\values-v26.xml",
                     "from": {
                         "startLines": "2,6",
                         "startColumns": "4,4",

@@ -262,9 +262,11 @@ public class ReceiveRadio_BLE extends Service {
                         isGetHomePage = false;
                     }
                     String imgUrl = null;
+                    List<String> names= new ArrayList<>();
                     byte[] img = null;
                     if (isGetHomePage && homePage != null) {
                         imgUrl = getImgUrl(homePage);
+                        names=getNames(homePage);
                         try {
                             img = getImage(imgUrl);
                         } catch (Exception e) {
@@ -311,7 +313,6 @@ public class ReceiveRadio_BLE extends Service {
             else
                 return null;
         }
-
         String getImgUrl(String text) {
             Pattern def = Pattern.compile("https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png", Pattern.CASE_INSENSITIVE);
             Matcher defMatcher = def.matcher(text);
@@ -326,7 +327,22 @@ public class ReceiveRadio_BLE extends Service {
             }
                 return null;
         }
-
+        List<String> getNames(String text) {
+            List<String> list = new ArrayList<>();
+            Pattern def = Pattern.compile("(?<=<title>).+?(?= on Twitter)", Pattern.CASE_INSENSITIVE);
+            Matcher defMatcher = def.matcher(text);
+            if ((defMatcher.find())) {
+                text = defMatcher.group();
+            }
+            Pattern name = Pattern.compile("(?<=\\().+?(?=\\))", Pattern.CASE_INSENSITIVE);
+            Matcher nameMatcher = name.matcher(text);
+            if ((nameMatcher.find())) {
+                list.add(nameMatcher.group());
+                list.add(nameMatcher.replaceAll(""));
+                return list;
+            }
+            return null;
+        }
         byte[] getImage(String path) throws Exception {
             URL url = new URL(path);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

@@ -1,7 +1,7 @@
 #Internal package file, do not edit.
-#Sat Sep 08 20:42:36 MSK 2018
+#Tue Sep 11 20:01:17 MSK 2018
 0.baseType=DIRECTORY
-0.base=C\:\\Users\\kami\\Desktop\\Andriod\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
+0.base=C\:\\Users\\B9\\Desktop\\BluetoothRadio\\twopage\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
 0.path=classes.dex
 0.set=DEX
 count=1

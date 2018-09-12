@@ -1,10 +1,20 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\Users\\kami\\Desktop\\Andriod\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-uk\\values-uk.xml",
+            "outputFile": "C:\\Users\\B9\\Desktop\\BluetoothRadio\\twopage\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-uk\\values-uk.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\kami\\.gradle\\caches\\transforms-1\\files-1.1\\twitter-core-3.1.1.aar\\c7b8f60f60e2d368070f36fea521ccbf\\res\\values-uk\\values-uk.xml",
+                    "source": "C:\\Users\\B9\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-26.1.0.aar\\234cb154ddf36276eabb4a5ba8ce8737\\res\\values-uk\\values-uk.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,165,273,396,498,604,690,798,916,995,1075,1156,1262,1369,1467,1575,1681,1790,1914,2014,2095",
+                        "endColumns": "109,107,122,101,105,85,107,117,78,79,80,105,106,97,107,105,108,123,99,80,100",
+                        "endOffsets": "160,268,391,493,599,685,793,911,990,1070,1151,1257,1364,1462,1570,1676,1785,1909,2009,2090,2191"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\B9\\.gradle\\caches\\transforms-1\\files-1.1\\twitter-core-3.1.1.aar\\cf2563342d05143d4108e0fd943c6639\\res\\values-uk\\values-uk.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
@@ -18,16 +28,6 @@
                         "startOffsets": "2196",
                         "endColumns": "82",
                         "endOffsets": "2274"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\kami\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-26.1.0.aar\\fcdb0ab4b9ac62162f435efa2cbede82\\res\\values-uk\\values-uk.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,165,273,396,498,604,690,798,916,995,1075,1156,1262,1369,1467,1575,1681,1790,1914,2014,2095",
-                        "endColumns": "109,107,122,101,105,85,107,117,78,79,80,105,106,97,107,105,108,123,99,80,100",
-                        "endOffsets": "160,268,391,493,599,685,793,911,990,1070,1151,1257,1364,1462,1570,1676,1785,1909,2009,2090,2191"
                     }
                 }
             ]

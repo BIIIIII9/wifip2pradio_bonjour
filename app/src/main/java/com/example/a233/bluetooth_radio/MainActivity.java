@@ -498,6 +498,9 @@ public class MainActivity extends AppCompatActivity {
                     String address = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_ADDRESS);
                     String text = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_TEXT);
                     Log.i("onReceive", "onReceive: " + text);
+                    if(address==null||address.isEmpty()){
+
+                    }
                     if (listViewStarFlag == false) {
                         myListViewManager = new MyListViewManager(address, text, bitmap);
                         myListViewManager.star(myMainListView);
@@ -562,7 +565,7 @@ public class MainActivity extends AppCompatActivity {
             map.put(str_text, text);
             mImgList.add(img);
             mList.add(map);
-            if(address.isEmpty()) {
+            if(address==null||address.isEmpty()) {
                 mListType = ListType.LIST_NEARBY_PEOPLE;
             }
             else {

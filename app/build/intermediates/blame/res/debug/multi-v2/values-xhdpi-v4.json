@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\Users\\kami\\Desktop\\Andriod\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-xhdpi-v4\\values-xhdpi-v4.xml",
+            "outputFile": "C:\\Users\\B9\\Desktop\\BluetoothRadio\\twopage\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-xhdpi-v4\\values-xhdpi-v4.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\kami\\.gradle\\caches\\transforms-1\\files-1.1\\twitter-core-3.1.1.aar\\c7b8f60f60e2d368070f36fea521ccbf\\res\\values-xhdpi-v4\\values-xhdpi-v4.xml",
+                    "source": "C:\\Users\\B9\\.gradle\\caches\\transforms-1\\files-1.1\\twitter-core-3.1.1.aar\\cf2563342d05143d4108e0fd943c6639\\res\\values-xhdpi-v4\\values-xhdpi-v4.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
