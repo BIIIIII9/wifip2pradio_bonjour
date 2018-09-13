@@ -1,4 +1,4 @@
-#Tue Jun 12 19:56:35 CST 2018
-base.0=C\:\\Users\\Tzar\\Desktop\\Andriod\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\40
+#Thu Sep 13 16:03:32 MSK 2018
+base.0=C\:\\Users\\B9\\Desktop\\BluetoothRadio\\twopage\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\21
 path.0=classes.dex
 renamed.0=classes.dex

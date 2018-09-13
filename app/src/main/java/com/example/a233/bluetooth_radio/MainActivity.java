@@ -32,6 +32,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.text.InputType;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -497,21 +502,28 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if (bundle != null) {
                     //TODO:Try BLE
-                    String address = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_ADDRESS);
+                    String url = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_ADDRESS);
                     String text = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_TEXT);
-                    String username=bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_USERNAME);
-                    String fullusername=bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_FULL_USERNAME);
+                    String username = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_USERNAME);
                     Log.i("onReceive", "onReceive: " + text);
-                    if(!(username==null||username.isEmpty())){
-                        mySecondListViewManager=new MyListViewManager(username,text,bitmap);
+                    if(!(url==null||url.isEmpty())) {
+                        if (secondListViewStarFlag == false) {
+                            mySecondListViewManager = new MyListViewManager(username, bitmap, url);
+                            mySecondListViewManager.star(listViewPeopleNearby);
+                            secondListViewStarFlag = true;
+                        } else {
+                            mySecondListViewManager.put(username, bitmap, url);
+                        }
                     }
-                    if (listViewStarFlag == false) {
-                        myListViewManager = new MyListViewManager(address, text, bitmap);
-                        myListViewManager.star(myMainListView);
-                        listViewStarFlag = true;
-                    } else {
-                        myListViewManager.put(address, text, bitmap);
-                    }
+//                    if(!(text==null||text.isEmpty())) {
+                        if (listViewStarFlag == false) {
+                            myListViewManager = new MyListViewManager(username, text, bitmap, url);
+                            myListViewManager.star(myMainListView);
+                            listViewStarFlag = true;
+                        } else {
+                            myListViewManager.put(username, text, bitmap, url);
+                        }
+//                    }
                 }
             }
             if (ServiceOnDestroy.equals(intent.getAction())) {
@@ -555,10 +567,14 @@ public class MainActivity extends AppCompatActivity {
         private final static String str_text = "Bluetooth_item_content";
         ArrayList<Map<String, String>> mList;
         ArrayList<Bitmap> mImgList;
-        MyAdapter mAdapter;
-        ListType mListType;
+        final MyAdapter mAdapter;
+        final ListType mListType;
+        ArrayList<String> mUrlsList;
+        ArrayList<String> mNamesList;
 
-        MyListViewManager(String address, String text, Bitmap img) {
+        MyListViewManager(String address, String text, Bitmap img,String url) {
+            this.mUrlsList=new ArrayList<>();
+            this.mNamesList=new ArrayList<>();
             this.mList = new ArrayList<>();
             this.mImgList=new ArrayList<>();
             Map<String, String> map = new HashMap<>();
@@ -568,23 +584,26 @@ public class MainActivity extends AppCompatActivity {
             map.put(str_time, time);
             map.put(str_text, text);
             mImgList.add(img);
+            mUrlsList.add(url);
             mList.add(map);
-            if(address==null||address.isEmpty()) {
+            if(!(url==null||url.isEmpty())
+                    &&(address==null||address.isEmpty())) {
                 mListType = ListType.LIST_NEARBY_PEOPLE;
             }
             else {
                 mListType=ListType.MAIN_LIST;
             }
-            mAdapter = new MyAdapter(mListType,MainActivity.this, mList, mImgList, R.layout.my_listview, new String[]{str_address, str_time, str_text},
+            mAdapter = new MyAdapter(mListType,MainActivity.this,mUrlsList, mList, mImgList, R.layout.my_listview, new String[]{str_address, str_time, str_text},
                     new int[]{R.id.Bluetooth_item_name, R.id.Bluetooth_item_time, R.id.Bluetooth_item_content});
         }
-        MyListViewManager(String text, Bitmap img){
-            this("", text, img);
+        MyListViewManager(String text, Bitmap img,String url){
+            this("", text, img,url);
+            mNamesList.add(text);
         }
         void star(ListView mListView) {
             mListView.setAdapter(mAdapter);
         }
-        void put(String address, String text, Bitmap img) {
+        void put(String address, String text, Bitmap img,String url) {
             Map<String, String> map = new HashMap<>();
             map.put(str_address, address);
             long systemTime = System.currentTimeMillis();
@@ -593,10 +612,14 @@ public class MainActivity extends AppCompatActivity {
             map.put(str_text, text);
             mList.add(0, map);
             mImgList.add(0,img);
+            mUrlsList.add(0,url);
             mAdapter.notifyDataSetChanged();
         }
-        void put(String text,Bitmap img){
-            put("", text, img);
+        void put(String text,Bitmap img,String url){
+            if(!mNamesList.contains(text)) {
+                put("", text, img,url);
+                mNamesList.add(text);
+            }
         }
     }
     class MyAdapter extends SimpleAdapter {
@@ -606,7 +629,8 @@ public class MainActivity extends AppCompatActivity {
         private LayoutInflater listContainer; // 视图容器
         String[] mFrom;
         int[] mTo;
-        ListType mListType;
+        final ListType mListType;
+        List<String> mUrlList;
 
         class ListItemView { // 自定义控件集合
             public LinearLayout box;
@@ -624,7 +648,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /*construction function*/
-        public MyAdapter(ListType type,Context context,
+        public MyAdapter(ListType type,Context context,ArrayList<String> url,
                          ArrayList<Map<String, String>> data, ArrayList<Bitmap> imgList, int resource,
                          String[] from, int[] to) {
             super(context, data, resource, from, to);
@@ -635,6 +659,7 @@ public class MainActivity extends AppCompatActivity {
             mTo = to;
             mImgList = imgList;
             mListType=type;
+            mUrlList=url;
         }
 
         @Override
@@ -650,7 +675,7 @@ public class MainActivity extends AppCompatActivity {
             final int mPosition = position;
             ListItemView listItemView = null;
             if (convertView == null) {
-                convertView = listContainer.inflate(R.layout.my_listview_people_nearby, null);//加载布局
+                convertView = listContainer.inflate(R.layout.my_listview, null);//加载布局
                 listItemView = new ListItemView();
                 listItemView.box = convertView.findViewById(R.id.Bluetooth_item_box);
                 listItemView.timeAndNameBox = convertView.findViewById(R.id.Bluetooth_item_topBox);
@@ -670,6 +695,15 @@ public class MainActivity extends AppCompatActivity {
             Map<String, String> item = listItem.get(mPosition);
             for (int i = 0; i < mFrom.length; i++) {
                 listItemView.textViews[i].setText(item.get(mFrom[i]));
+            }
+            String defaultName="Not login";
+            if(item.get(mFrom[0])==null||item.get(mFrom[0]).isEmpty()) {
+                listItemView.textViews[0].setText(defaultName);
+            }
+            else{
+            String url=mUrlList.get(position);
+            listItemView.textViews[0].setText(getClickableSpan(item.get(mFrom[0]),url));
+            listItemView.textViews[0].setMovementMethod(LinkMovementMethod.getInstance());
             }
             listItemView.imageView.setImageBitmap(mImgList.get(mPosition));
             listItemView.button_copy.setOnClickListener(new View.OnClickListener() {
@@ -700,7 +734,7 @@ public class MainActivity extends AppCompatActivity {
             final int mPosition = position;
             ListItemView_people_nearby listItemView = null;
             if (convertView == null) {
-                convertView = listContainer.inflate(R.layout.my_listview, null);//加载布局
+                convertView = listContainer.inflate(R.layout.my_listview_people_nearby, null);//加载布局
                 listItemView = new ListItemView_people_nearby();
                 listItemView.bar = convertView.findViewById(R.id.Bluetooth_item_barBox);
                 listItemView.id = convertView.findViewById(R.id.id_people_nearby);
@@ -711,12 +745,17 @@ public class MainActivity extends AppCompatActivity {
                 listItemView = (ListItemView_people_nearby) convertView.getTag();//利用缓存的View
             }
             Map<String, String> item = listItem.get(mPosition);
-            listItemView.id.setText(item.get(mFrom[0]));
+            String url=mUrlList.get(position);
+            listItemView.id.setText(getClickableSpan(item.get(mFrom[2]),url));
+            listItemView.id.setMovementMethod(LinkMovementMethod.getInstance());
             listItemView.img.setImageBitmap(mImgList.get(mPosition));
             return convertView;
         }
-
-
+        private SpannableString getClickableSpan(String text,String url){
+            SpannableString spannableString=new SpannableString(text);
+            spannableString.setSpan(new URLSpan(url),0,text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            return spannableString;
+        }
     }
     public class viewAdapter extends PagerAdapter {
         public List<View> list_view;

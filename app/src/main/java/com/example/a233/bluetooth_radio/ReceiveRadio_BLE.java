@@ -60,7 +60,6 @@ public class ReceiveRadio_BLE extends Service {
     public static final String EXTRA_CONTENT_MESSAGE_ADDRESS="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_ADDRESS";
     public static final String EXTRA_CONTENT_MESSAGE_TEXT="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_TEXT";
     public static final String EXTRA_CONTENT_MESSAGE_USERNAME="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_USERNAME";
-    public static final String EXTRA_CONTENT_MESSAGE_FULL_USERNAME="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_FULL_USERNAME";
     private ScanCallback mLeScanCallback =
             new ScanCallback() {
                 @Override
@@ -167,14 +166,14 @@ public class ReceiveRadio_BLE extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mLooper.quit();
-        if(foundReceiver!=null) {
-            unregisterReceiver(foundReceiver);
-        }
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         BluetoothLeScanner scanner=adapter.getBluetoothLeScanner();
         scanner.stopScan(mLeScanCallback);
         stopForeground(true);
+        mLooper.quit();
+        if(foundReceiver!=null) {
+            unregisterReceiver(foundReceiver);
+        }
         Intent intent = new Intent(MainActivity.ServiceOnDestroy);
         myLocalBroadcastManager.sendBroadcast(intent);
     }
@@ -254,39 +253,39 @@ public class ReceiveRadio_BLE extends Service {
                 if (localMessageTotal == messageTotal) {
                     String text = byteStitching(this.messageBodyList);
                     String homePageUrl = getHomePageUrl(text);
-                    boolean isGetHomePage = true;
-                    boolean isGetImage = true;
+                    boolean isGetHomePage = false;
+                    boolean isGetImage = false;
                     String homePage = null;
-                    try {
-                        homePage=getHtml(homePageUrl);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        isGetHomePage = false;
+                    if(!(homePageUrl==null||homePageUrl.isEmpty())) {
+                        Pattern name = Pattern.compile(homePageUrl, Pattern.CASE_INSENSITIVE);
+                        Matcher nameMatcher = name.matcher(text);
+                        text=nameMatcher.replaceAll("");
+                        try {
+                            homePage = getHtml(homePageUrl);
+                            isGetHomePage = true;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            isGetHomePage = false;
+                        }
                     }
-                    String imgUrl = null;
-                    List<String> names= new ArrayList<>();
+                    String imgUrl = "";
+                    String names="";
                     byte[] img = null;
                     if (isGetHomePage && homePage != null) {
                         imgUrl = getImgUrl(homePage);
                         names=getNames(homePage);
                         try {
                             img = getImage(imgUrl);
+                            isGetImage = true;
                         } catch (Exception e) {
                             e.printStackTrace();
                             isGetImage = false;
                         }
                     }
                     Bundle bundle = new Bundle();
-                    bundle.putString(EXTRA_CONTENT_MESSAGE_ADDRESS, addressMac);
+                    bundle.putString(EXTRA_CONTENT_MESSAGE_ADDRESS, homePageUrl);
                     bundle.putString(EXTRA_CONTENT_MESSAGE_TEXT, text);
-                    if(names==null||names.isEmpty()) {
-                        bundle.putString(EXTRA_CONTENT_MESSAGE_USERNAME, null);
-                        bundle.putString(EXTRA_CONTENT_MESSAGE_FULL_USERNAME, null);
-                    }
-                    else{
-                        bundle.putString(EXTRA_CONTENT_MESSAGE_USERNAME, names.get(0));
-                        bundle.putString(EXTRA_CONTENT_MESSAGE_FULL_USERNAME, names.get(1));
-                    }
+                    bundle.putString(EXTRA_CONTENT_MESSAGE_USERNAME, names);
                     Intent intent = new Intent(MainActivity.LocalAction_RefreshUI);
                     intent.putExtras(bundle);
                     if(isGetImage&&img!=null)
@@ -326,31 +325,31 @@ public class ReceiveRadio_BLE extends Service {
         String getImgUrl(String text) {
             Pattern def = Pattern.compile("https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png", Pattern.CASE_INSENSITIVE);
             Matcher defMatcher = def.matcher(text);
-            if ((defMatcher.find())) {
+            if (defMatcher.find()) {
                 return defMatcher.group();
             }
             else {
-                Pattern c = Pattern.compile("https://pbs.twimg.com/profile_images/\\w{0,50}/\\w{0,50}.jpg", Pattern.CASE_INSENSITIVE);
+                Pattern c = Pattern.compile("https://pbs.twimg.com/profile_images/.+?/.+?.(png|jpg)", Pattern.CASE_INSENSITIVE);
                 Matcher matcher = c.matcher(text);
-                if ((matcher.find()))
+                if (matcher.find())
                     return matcher.group();
             }
                 return null;
         }
-        List<String> getNames(String text) {
-            List<String> list = new ArrayList<>();
-            Pattern def = Pattern.compile("(?<=<title>).+?(?= on Twitter)", Pattern.CASE_INSENSITIVE);
+        String getNames(String text) {
+            Pattern def = Pattern.compile("(?<=<title>).+?(?=\\))", Pattern.CASE_INSENSITIVE);
             Matcher defMatcher = def.matcher(text);
-            if ((defMatcher.find())) {
+            if (defMatcher.find()) {
                 text = defMatcher.group();
+                return text+")";
             }
-            Pattern name = Pattern.compile("(?<=\\().+?(?=\\))", Pattern.CASE_INSENSITIVE);
-            Matcher nameMatcher = name.matcher(text);
-            if ((nameMatcher.find())) {
-                list.add(nameMatcher.group());
-                list.add(nameMatcher.replaceAll(""));
-                return list;
-            }
+//            Pattern name = Pattern.compile("(?<=\\().+?(?=\\))", Pattern.CASE_INSENSITIVE);
+//            Matcher nameMatcher = name.matcher(text);
+//            if (nameMatcher.find()) {
+//                list.add(nameMatcher.group());
+//                list.add(nameMatcher.replaceAll(""));
+//                return list;
+//            }
             return null;
         }
         byte[] getImage(String path) throws Exception {

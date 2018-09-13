@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <instant-run
     abi="arm64-v8a,armeabi-v7a,armeabi"
-    api-level="23"
-    build-mode="FULL"
-    density="xxhdpi"
+    api-level="24"
+    build-mode="COLD"
+    density="420dpi"
     format="10"
-    plugin-version="3.1.3"
-    timestamp="1528804604290"
-    token="1202383748750713754"
-    verifier="FULL_BUILD_REQUESTED" >
+    plugin-version="3.1.4"
+    timestamp="1536847525540"
+    token="6621129143418515401"
+    verifier="COLD_SWAP_REQUESTED" >
 
     <task
         name="javac"
@@ -18,88 +18,55 @@
         duration="0" />
     <task
         name="instant-run-transform"
-        duration="485" />
+        duration="0" />
     <task
         name="verifier"
         duration="0" />
 
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_6.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\instant-run-apk\debug\app-debug.apk"
-        type="SPLIT_MAIN" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_0.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_8.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_3.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_2.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_9.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\dep\dependencies.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_1.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_4.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_7.apk"
-        type="SPLIT" />
-    <artifact
-        location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_5.apk"
-        type="SPLIT" />
-
     <build
         build-mode="FULL"
-        timestamp="1528804604290"
+        timestamp="1536847449857"
         verifier="FULL_BUILD_REQUESTED" >
         <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_6.apk"
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_6.apk"
             type="SPLIT" />
         <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\instant-run-apk\debug\app-debug.apk"
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_0.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_5.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_9.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_8.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_7.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_4.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_1.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\dep\dependencies.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_2.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\split-apk\debug\slices\slice_3.apk"
+            type="SPLIT" />
+        <artifact
+            location="C:\Users\B9\Desktop\BluetoothRadio\twopage\app\build\intermediates\instant-run-apk\debug\app-debug.apk"
             type="SPLIT_MAIN" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_0.apk"
-            type="SPLIT" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_8.apk"
-            type="SPLIT" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_3.apk"
-            type="SPLIT" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_2.apk"
-            type="SPLIT" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_9.apk"
-            type="SPLIT" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\dep\dependencies.apk"
-            type="SPLIT" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_1.apk"
-            type="SPLIT" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_4.apk"
-            type="SPLIT" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_7.apk"
-            type="SPLIT" />
-        <artifact
-            location="C:\Users\Tzar\Desktop\Andriod\app\build\intermediates\split-apk\debug\slices\slice_5.apk"
-            type="SPLIT" />
     </build>
+    <build
+        build-mode="COLD"
+        timestamp="1536847525540"
+        verifier="COLD_SWAP_REQUESTED" />
 
 </instant-run>
