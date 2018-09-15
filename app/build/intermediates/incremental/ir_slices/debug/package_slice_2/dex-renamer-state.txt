@@ -1,4 +1,4 @@
-#Sat Sep 15 03:14:08 MSK 2018
-base.0=C\:\\Users\\B9\\Desktop\\BluetoothRadio\\twopage\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\93
+#Sat Sep 15 04:19:41 MSK 2018
+base.0=C\:\\Users\\B9\\Desktop\\BluetoothRadio\\twopage\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\111
 path.0=classes.dex
 renamed.0=classes.dex

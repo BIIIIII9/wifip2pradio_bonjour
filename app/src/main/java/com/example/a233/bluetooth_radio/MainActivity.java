@@ -217,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
                         .show();
             }
         });
-
         SharedPreferences sp = getSharedPreferences("TwitterID_Bluetooth", Context.MODE_PRIVATE);
         String twitterID = sp.getString("TwitterID", null);
         if (twitterID != null) {
