@@ -27,7 +27,6 @@
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/editText"
         app:layout_constraintEnd_toEndOf="parent"
-
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
@@ -58,7 +57,8 @@
     <ListView
         android:id="@+id/MyContentListView"
         android:layout_width="0dp"
-        android:layout_height="263dp"
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"

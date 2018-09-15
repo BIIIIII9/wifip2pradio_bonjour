@@ -16,6 +16,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -31,12 +33,18 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.text.Html;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.text.style.URLSpan;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -66,6 +74,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static android.widget.TextView.BufferType.EDITABLE;
 
@@ -93,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
     private List<String> listTitles;
     private View firstPage;
     private View secondPage;
-    private  viewAdapter myViewAdapter;
+    private viewAdapter myViewAdapter;
     static public final String LocalAction_RefreshUI = "Local_Broadcast_RefreshActivityUI";
     static public final String ServiceOnDestroy = "Local_Broadcast_Service_OnDestroy";
     private Runnable timeRunable;
@@ -101,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     LocalBroadcastManager myLocalBroadcastManager;
     BroadcastReceiver myReceiver;
     boolean listViewStarFlag = false;
-    boolean secondListViewStarFlag= false;
+    boolean secondListViewStarFlag = false;
     boolean isCheckedAddID = false;
 
 
@@ -114,16 +124,17 @@ public class MainActivity extends AppCompatActivity {
         initButtonState();
         initTwitterLogin();
         myMainListView = firstPage.findViewById(R.id.MyContentListView);
-        listViewPeopleNearby=secondPage.findViewById(R.id.list_view_people_nearby);
+        listViewPeopleNearby = secondPage.findViewById(R.id.list_view_people_nearby);
         myLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
         myLocalBroadcastManager.registerReceiver(new LocalBroadcastReceiver(), new IntentFilter(LocalAction_RefreshUI));
         myButtonState = ButtonState.CANCEL;
         setButtonState(myButtonState);
         mainHandler = new Handler();
     }
-    void initMainActivity(){
-        myTabLyaout=  findViewById(R.id.myTabLayout);
-        myViewPage =  findViewById(R.id.myViewPage);
+
+    void initMainActivity() {
+        myTabLyaout = findViewById(R.id.myTabLayout);
+        myViewPage = findViewById(R.id.myViewPage);
         listViews = new ArrayList<>();
         LayoutInflater mInflater = getLayoutInflater();
         firstPage = mInflater.inflate(R.layout.my_first_page, null);
@@ -141,11 +152,12 @@ public class MainActivity extends AppCompatActivity {
         //tab_title.setPadding(20,20,20,20);
         myTabLyaout.addTab(myTabLyaout.newTab().setText(listTitles.get(0)));
         myTabLyaout.addTab(myTabLyaout.newTab().setText(listTitles.get(1)));
-        myViewAdapter = new viewAdapter(this,listViews,listTitles,null);
+        myViewAdapter = new viewAdapter(this, listViews, listTitles, null);
         myViewPage.setAdapter(myViewAdapter);
         myTabLyaout.setupWithViewPager(myViewPage);
     }
-    void initTextView(){
+
+    void initTextView() {
 
         EditText editText = firstPage.findViewById(R.id.editText);
         editText.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
@@ -153,7 +165,8 @@ public class MainActivity extends AppCompatActivity {
         editText.setSingleLine(false);
         editText.setHorizontallyScrolling(false);
     }
-    void initButtonState(){
+
+    void initButtonState() {
         setLogState(false);
         final CheckBox myCheckBox = firstPage.findViewById(R.id.checkBox);
         myCheckBox.setChecked(false);
@@ -168,7 +181,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    void initTwitterLogin(){
+
+    void initTwitterLogin() {
         final Button logoutButton = firstPage.findViewById(R.id.logout_button);
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -211,27 +225,29 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-    void setLogState(boolean isLogin){
+
+    void setLogState(boolean isLogin) {
         final TwitterLoginButton loginButton = firstPage.findViewById(R.id.login_button);
         final CheckBox checkBox = firstPage.findViewById(R.id.checkBox);
         final Button logoutButton = firstPage.findViewById(R.id.logout_button);
-        if(isLogin) {
+        if (isLogin) {
             loginButton.setVisibility(View.GONE);
             checkBox.setVisibility(View.VISIBLE);
             logoutButton.setVisibility(View.VISIBLE);
-        }
-        else{
+        } else {
             loginButton.setVisibility(View.VISIBLE);
             checkBox.setVisibility(View.GONE);
             logoutButton.setVisibility(View.GONE);
         }
 
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         runCancelService();
     }
+
     //After serviceMaxRuntime seconds stop service
     private void setServiceRuntime() {
         timeRunable = new Runnable() {
@@ -242,14 +258,17 @@ public class MainActivity extends AppCompatActivity {
         };
         mainHandler.postDelayed(timeRunable, serviceMaxRuntime);
     }
+
     private void hideKeyboard(View view) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
+
     public void changeTwitterLoginState(View view) {
     }
+
     //Onclick button Send
     public void sendMessage(View view) {
         hideKeyboard(view);
@@ -261,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     public void runSendMessage() {
         if (MyBluetoothMethodManager.isBluetoothEnabled()) {
             Intent intent = new Intent(this, ChangeNameOfBluetooth.class);
@@ -279,12 +299,14 @@ public class MainActivity extends AppCompatActivity {
             setServiceRuntime();
         }
     }
+
     public void requestBluetoothDiscoverable() {
         Intent requestBluetoothOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         requestBluetoothOn.setAction(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
         requestBluetoothOn.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, BLUETOOTH_DISCOVERABLE_DURATION);//BLUETOOTH_DISCOVERABLE_DURATION=300s
         startActivityForResult(requestBluetoothOn, REQUEST_CODE_SEND_MY_MASSAGE);
     }
+
     //Onclick button Search
     public void searchMessage(View view) {
         hideKeyboard(view);
@@ -296,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     //TODO:Try BLE
     public void runSearchMessage() {
         if (MyBluetoothMethodManager.isBluetoothEnabled() && checkPermission()) {
@@ -506,7 +529,7 @@ public class MainActivity extends AppCompatActivity {
                     String text = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_TEXT);
                     String username = bundle.getString(ReceiveRadio_BLE.EXTRA_CONTENT_MESSAGE_USERNAME);
                     Log.i("onReceive", "onReceive: " + text);
-                    if(!(url==null||url.isEmpty())) {
+                    if (!(url == null || url.isEmpty())) {
                         if (secondListViewStarFlag == false) {
                             mySecondListViewManager = new MyListViewManager(username, bitmap, url);
                             mySecondListViewManager.star(listViewPeopleNearby);
@@ -516,13 +539,13 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 //                    if(!(text==null||text.isEmpty())) {
-                        if (listViewStarFlag == false) {
-                            myListViewManager = new MyListViewManager(username, text, bitmap, url);
-                            myListViewManager.star(myMainListView);
-                            listViewStarFlag = true;
-                        } else {
-                            myListViewManager.put(username, text, bitmap, url);
-                        }
+                    if (listViewStarFlag == false) {
+                        myListViewManager = new MyListViewManager(username, text, bitmap, url);
+                        myListViewManager.star(myMainListView);
+                        listViewStarFlag = true;
+                    } else {
+                        myListViewManager.put(username, text, bitmap, url);
+                    }
 //                    }
                 }
             }
@@ -532,6 +555,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
     //    private class MyListViewManager{
 //        private final static String str_address="Bluetooth_name";
 //        private final static String str_time="Bluetooth_time";
@@ -572,11 +596,11 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<String> mUrlsList;
         ArrayList<String> mNamesList;
 
-        MyListViewManager(String address, String text, Bitmap img,String url) {
-            this.mUrlsList=new ArrayList<>();
-            this.mNamesList=new ArrayList<>();
+        MyListViewManager(String address, String text, Bitmap img, String url) {
+            this.mUrlsList = new ArrayList<>();
+            this.mNamesList = new ArrayList<>();
             this.mList = new ArrayList<>();
-            this.mImgList=new ArrayList<>();
+            this.mImgList = new ArrayList<>();
             Map<String, String> map = new HashMap<>();
             map.put(str_address, address);
             long systemTime = System.currentTimeMillis();
@@ -586,24 +610,26 @@ public class MainActivity extends AppCompatActivity {
             mImgList.add(img);
             mUrlsList.add(url);
             mList.add(map);
-            if(!(url==null||url.isEmpty())
-                    &&(address==null||address.isEmpty())) {
+            if (!(url == null || url.isEmpty())
+                    && (address == null || address.isEmpty())) {
                 mListType = ListType.LIST_NEARBY_PEOPLE;
+            } else {
+                mListType = ListType.MAIN_LIST;
             }
-            else {
-                mListType=ListType.MAIN_LIST;
-            }
-            mAdapter = new MyAdapter(mListType,MainActivity.this,mUrlsList, mList, mImgList, R.layout.my_listview, new String[]{str_address, str_time, str_text},
+            mAdapter = new MyAdapter(mListType, MainActivity.this, mUrlsList, mList, mImgList, R.layout.my_listview, new String[]{str_address, str_time, str_text},
                     new int[]{R.id.Bluetooth_item_name, R.id.Bluetooth_item_time, R.id.Bluetooth_item_content});
         }
-        MyListViewManager(String text, Bitmap img,String url){
-            this("", text, img,url);
+
+        MyListViewManager(String text, Bitmap img, String url) {
+            this("", text, img, url);
             mNamesList.add(text);
         }
+
         void star(ListView mListView) {
             mListView.setAdapter(mAdapter);
         }
-        void put(String address, String text, Bitmap img,String url) {
+
+        void put(String address, String text, Bitmap img, String url) {
             Map<String, String> map = new HashMap<>();
             map.put(str_address, address);
             long systemTime = System.currentTimeMillis();
@@ -611,17 +637,19 @@ public class MainActivity extends AppCompatActivity {
             map.put(str_time, time);
             map.put(str_text, text);
             mList.add(0, map);
-            mImgList.add(0,img);
-            mUrlsList.add(0,url);
+            mImgList.add(0, img);
+            mUrlsList.add(0, url);
             mAdapter.notifyDataSetChanged();
         }
-        void put(String text,Bitmap img,String url){
-            if(!mNamesList.contains(text)) {
-                put("", text, img,url);
+
+        void put(String text, Bitmap img, String url) {
+            if (!mNamesList.contains(text)) {
+                put("", text, img, url);
                 mNamesList.add(text);
             }
         }
     }
+
     class MyAdapter extends SimpleAdapter {
         private Context context; /*运行环境*/
         ArrayList<Map<String, String>> listItem;  /*数据源*/
@@ -641,14 +669,15 @@ public class MainActivity extends AppCompatActivity {
             public Button button_copy;
 
         }
-        class ListItemView_people_nearby{
+
+        class ListItemView_people_nearby {
             public LinearLayout bar;
             public TextView id;
             public ImageView img;
         }
 
         /*construction function*/
-        public MyAdapter(ListType type,Context context,ArrayList<String> url,
+        public MyAdapter(ListType type, Context context, ArrayList<String> url,
                          ArrayList<Map<String, String>> data, ArrayList<Bitmap> imgList, int resource,
                          String[] from, int[] to) {
             super(context, data, resource, from, to);
@@ -658,19 +687,23 @@ public class MainActivity extends AppCompatActivity {
             mFrom = from;
             mTo = to;
             mImgList = imgList;
-            mListType=type;
-            mUrlList=url;
+            mListType = type;
+            mUrlList = url;
         }
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-          switch (mListType){
-              case MAIN_LIST: return getViewForMainList(position, convertView, parent);
-              case LIST_NEARBY_PEOPLE: return getViewForNearbyList(position, convertView, parent);
-              default: return getViewForMainList(position, convertView, parent);
-          }
+            switch (mListType) {
+                case MAIN_LIST:
+                    return getViewForMainList(position, convertView, parent);
+                case LIST_NEARBY_PEOPLE:
+                    return getViewForNearbyList(position, convertView, parent);
+                default:
+                    return getViewForMainList(position, convertView, parent);
+            }
         }
-        private View getViewForMainList(final int position, View convertView, ViewGroup parent){
+
+        private View getViewForMainList(final int position, View convertView, ViewGroup parent) {
 
             final int mPosition = position;
             ListItemView listItemView = null;
@@ -696,14 +729,13 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < mFrom.length; i++) {
                 listItemView.textViews[i].setText(item.get(mFrom[i]));
             }
-            String defaultName="Not login";
-            if(item.get(mFrom[0])==null||item.get(mFrom[0]).isEmpty()) {
+            String defaultName = "Not login";
+            if (item.get(mFrom[0]) == null || item.get(mFrom[0]).isEmpty()) {
                 listItemView.textViews[0].setText(defaultName);
-            }
-            else{
-            String url=mUrlList.get(position);
-            listItemView.textViews[0].setText(getClickableSpan(item.get(mFrom[0]),url));
-            listItemView.textViews[0].setMovementMethod(LinkMovementMethod.getInstance());
+            } else {
+                String url = mUrlList.get(position);
+                listItemView.textViews[0].setText(getClickableSpan(item.get(mFrom[0]), url));
+                listItemView.textViews[0].setMovementMethod(LinkMovementMethod.getInstance());
             }
             listItemView.imageView.setImageBitmap(mImgList.get(mPosition));
             listItemView.button_copy.setOnClickListener(new View.OnClickListener() {
@@ -730,7 +762,8 @@ public class MainActivity extends AppCompatActivity {
             });
             return convertView;
         }
-        private View getViewForNearbyList(final int position, View convertView, ViewGroup parent){
+
+        private View getViewForNearbyList(final int position, View convertView, ViewGroup parent) {
             final int mPosition = position;
             ListItemView_people_nearby listItemView = null;
             if (convertView == null) {
@@ -745,43 +778,80 @@ public class MainActivity extends AppCompatActivity {
                 listItemView = (ListItemView_people_nearby) convertView.getTag();//利用缓存的View
             }
             Map<String, String> item = listItem.get(mPosition);
-            String url=mUrlList.get(position);
-            listItemView.id.setText(getClickableSpan(item.get(mFrom[2]),url));
+            String url = mUrlList.get(position);
+            listItemView.id.setText(getClickableSpan(item.get(mFrom[2]), url));
             listItemView.id.setMovementMethod(LinkMovementMethod.getInstance());
             listItemView.img.setImageBitmap(mImgList.get(mPosition));
             return convertView;
         }
-        private SpannableString getClickableSpan(String text,String url){
-            SpannableString spannableString=new SpannableString(text);
-            spannableString.setSpan(new URLSpan(url),0,text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        private SpannableString getClickableSpan(String text, final String url) {
+            SpannableString spannableString = new SpannableString(text);
+            spannableString.setSpan(new ClickableSpan() {
+                @Override
+                public void onClick(View widget) {
+                    Uri uri = Uri.parse(url);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    PackageManager packageManager = getPackageManager();
+                    List activities = packageManager.queryIntentActivities(intent,
+                            PackageManager.MATCH_DEFAULT_ONLY);
+                    boolean isIntentSafe = activities.size() > 0;
+                    if (isIntentSafe) {
+                        startActivity(intent);
+                    }
+                }
+            }, 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            Pattern name = Pattern.compile("\\(.+?\\)", Pattern.CASE_INSENSITIVE);
+            Matcher nameMatcher = name.matcher(text);
+            if (nameMatcher.find()) {
+                final int firstLength = text.length() - nameMatcher.group().length();
+                spannableString.setSpan(new ForegroundColorSpan(Color.GRAY), firstLength, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannableString.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, firstLength, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannableString.setSpan(new ForegroundColorSpan(Color.BLACK), 0, firstLength, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                spannableString.setSpan(new RelativeSizeSpan(1.2f), 0, firstLength, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            NoUnderlineSpan noUnderlineSpan = new NoUnderlineSpan();
+            spannableString.setSpan(noUnderlineSpan, 0, text.length(), Spanned.SPAN_MARK_MARK);
             return spannableString;
         }
     }
+
+    public class NoUnderlineSpan extends UnderlineSpan {
+        @Override
+        public void updateDrawState(TextPaint ds) {
+            ds.setUnderlineText(false);
+        }
+    }
+
     public class viewAdapter extends PagerAdapter {
         public List<View> list_view;
         private List<String> list_Title;                              //tab名的列表
         private int[] tabImg;
         private Context context;
 
-        public viewAdapter(Context context,List<View> list_view,List<String> list_Title,int[] tabImg) {
+        public viewAdapter(Context context, List<View> list_view, List<String> list_Title, int[] tabImg) {
             this.list_view = list_view;
             this.list_Title = list_Title;
             this.tabImg = tabImg;
             this.context = context;
         }
+
         @Override
         public int getCount() {
             return list_view.size();
         }
+
         @Override
         public boolean isViewFromObject(View view, Object object) {
-            return view==object;
+            return view == object;
         }
+
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             ((ViewPager) container).addView(list_view.get(position), 0);
             return list_view.get(position);
         }
+
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
             ((ViewPager) container).removeView(list_view.get(position));
@@ -789,9 +859,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return  list_Title.get(position % list_Title.size());
+            return list_Title.get(position % list_Title.size());
         }
     }
+
 }
 enum ListType{
     MAIN_LIST,LIST_NEARBY_PEOPLE

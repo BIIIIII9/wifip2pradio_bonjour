@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-45:12
-INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-45:12
-INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-45:12
-INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-45:12
+ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-44:12
+INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-44:12
+INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-44:12
+INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-44:12
 MERGED from [com.twitter.sdk.android:twitter-core:3.1.1] C:\Users\B9\.gradle\caches\transforms-1\files-1.1\twitter-core-3.1.1.aar\cf2563342d05143d4108e0fd943c6639\AndroidManifest.xml:18:1-35:12
 MERGED from [com.android.support:design:26.1.0] C:\Users\B9\.gradle\caches\transforms-1\files-1.1\design-26.1.0.aar\08a5e2849b10f8b43ab2d7ddfc32b10e\AndroidManifest.xml:17:1-31:12
 MERGED from [com.android.support:appcompat-v7:26.1.0] C:\Users\B9\.gradle\caches\transforms-1\files-1.1\appcompat-v7-26.1.0.aar\234cb154ddf36276eabb4a5ba8ce8737\AndroidManifest.xml:17:1-31:12
@@ -19,20 +19,20 @@ MERGED from [com.android.support:support-media-compat:26.1.0] C:\Users\B9\.gradl
 MERGED from [com.android.support:support-core-utils:26.1.0] C:\Users\B9\.gradle\caches\transforms-1\files-1.1\support-core-utils-26.1.0.aar\4eb88233f4ec0cb55ac80be95f26443a\AndroidManifest.xml:17:1-31:12
 MERGED from [com.android.support:support-compat:26.1.0] C:\Users\B9\.gradle\caches\transforms-1\files-1.1\support-compat-26.1.0.aar\87e0c4365567765225485fe2315b8e3b\AndroidManifest.xml:17:1-31:12
 MERGED from [android.arch.lifecycle:runtime:1.0.0] C:\Users\B9\.gradle\caches\transforms-1\files-1.1\runtime-1.0.0.aar\defbe8f7127657f16a447606f5d45234\AndroidManifest.xml:17:1-30:12
-INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-45:12
-INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-45:12
-INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-45:12
+INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-44:12
+INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-44:12
+INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-44:12
 	package
 		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:3:5-47
 		INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml
 		INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml
 	android:versionName
 		INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-45:12
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-44:12
 		INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml
 	android:versionCode
 		INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-45:12
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:1-44:12
 		INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml
 	xmlns:android
 		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:2:11-69
@@ -65,7 +65,7 @@ ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManife
 	android:name
 		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:13:22-78
 application
-ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:15:5-43:19
+ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:15:5-42:19
 MERGED from [com.twitter.sdk.android:twitter-core:3.1.1] C:\Users\B9\.gradle\caches\transforms-1\files-1.1\twitter-core-3.1.1.aar\cf2563342d05143d4108e0fd943c6639\AndroidManifest.xml:27:5-33:19
 MERGED from [com.twitter.sdk.android:twitter-core:3.1.1] C:\Users\B9\.gradle\caches\transforms-1\files-1.1\twitter-core-3.1.1.aar\cf2563342d05143d4108e0fd943c6639\AndroidManifest.xml:27:5-33:19
 MERGED from [com.android.support:design:26.1.0] C:\Users\B9\.gradle\caches\transforms-1\files-1.1\design-26.1.0.aar\08a5e2849b10f8b43ab2d7ddfc32b10e\AndroidManifest.xml:25:5-29:19
@@ -111,43 +111,43 @@ MERGED from [android.arch.lifecycle:runtime:1.0.0] C:\Users\B9\.gradle\caches\tr
 	android:name
 		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:16:9-37
 activity#com.example.a233.bluetooth_radio.MainActivity
-ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:23:9-29:20
+ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:23:9-28:20
 	android:name
 		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:23:19-47
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:24:13-28:29
+ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:24:13-27:29
 action#android.intent.action.MAIN
 ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:25:17-69
 	android:name
 		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:25:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:27:17-77
+ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:26:17-77
 	android:name
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:27:27-74
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:26:27-74
 service#com.example.a233.bluetooth_radio.ChangeNameOfBluetooth
-ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:31:9-34:40
+ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:30:9-33:40
 	android:enabled
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:33:13-35
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:32:13-35
 	android:exported
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:34:13-37
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:33:13-37
 	android:name
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:32:13-50
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:31:13-50
 service#com.example.a233.bluetooth_radio.ReceiveRadio
-ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:35:9-38:39
+ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:34:9-37:39
 	android:enabled
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:37:13-35
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:36:13-35
 	android:exported
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:38:13-36
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:37:13-36
 	android:name
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:36:13-41
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:35:13-41
 service#com.example.a233.bluetooth_radio.ReceiveRadio_BLE
-ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:39:9-42:47
+ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:38:9-41:47
 	android:enabled
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:41:13-35
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:40:13-35
 	android:exported
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:42:13-36
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:41:13-36
 	android:name
-		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:40:13-45
+		ADDED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml:39:13-45
 uses-sdk
 INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\B9\Desktop\BluetoothRadio\twopage\app\src\main\AndroidManifest.xml

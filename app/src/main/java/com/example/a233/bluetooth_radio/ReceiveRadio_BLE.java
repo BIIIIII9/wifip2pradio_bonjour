@@ -252,7 +252,8 @@ public class ReceiveRadio_BLE extends Service {
                 this.localMessageTotal++;
                 if (localMessageTotal == messageTotal) {
                     String text = byteStitching(this.messageBodyList);
-                    String homePageUrl = getHomePageUrl(text);
+                    final String homePageUrl = getHomePageUrl(text);
+                    String url=homePageUrl;
                     boolean isGetHomePage = false;
                     boolean isGetImage = false;
                     String homePage = null;
@@ -260,6 +261,7 @@ public class ReceiveRadio_BLE extends Service {
                         Pattern name = Pattern.compile(homePageUrl, Pattern.CASE_INSENSITIVE);
                         Matcher nameMatcher = name.matcher(text);
                         text=nameMatcher.replaceAll("");
+                        url=homePageUrl.replaceAll("\\s+","");
                         try {
                             homePage = getHtml(homePageUrl);
                             isGetHomePage = true;
@@ -283,7 +285,7 @@ public class ReceiveRadio_BLE extends Service {
                         }
                     }
                     Bundle bundle = new Bundle();
-                    bundle.putString(EXTRA_CONTENT_MESSAGE_ADDRESS, homePageUrl);
+                    bundle.putString(EXTRA_CONTENT_MESSAGE_ADDRESS, url);
                     bundle.putString(EXTRA_CONTENT_MESSAGE_TEXT, text);
                     bundle.putString(EXTRA_CONTENT_MESSAGE_USERNAME, names);
                     Intent intent = new Intent(MainActivity.LocalAction_RefreshUI);
@@ -317,9 +319,9 @@ public class ReceiveRadio_BLE extends Service {
         String getHomePageUrl(String text) {
             Pattern p = Pattern.compile("\\shttps://twitter.com/\\w{1,50}\\s", Pattern.CASE_INSENSITIVE);
             Matcher matcher = p.matcher(text);
-            if ((matcher.find()))
+            if ((matcher.find())) {
                 return matcher.group();
-            else
+            }
                 return null;
         }
         String getImgUrl(String text) {
@@ -343,13 +345,6 @@ public class ReceiveRadio_BLE extends Service {
                 text = defMatcher.group();
                 return text+")";
             }
-//            Pattern name = Pattern.compile("(?<=\\().+?(?=\\))", Pattern.CASE_INSENSITIVE);
-//            Matcher nameMatcher = name.matcher(text);
-//            if (nameMatcher.find()) {
-//                list.add(nameMatcher.group());
-//                list.add(nameMatcher.replaceAll(""));
-//                return list;
-//            }
             return null;
         }
         byte[] getImage(String path) throws Exception {
