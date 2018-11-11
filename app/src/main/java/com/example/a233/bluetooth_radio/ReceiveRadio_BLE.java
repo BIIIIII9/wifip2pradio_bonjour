@@ -287,6 +287,9 @@ public class ReceiveRadio_BLE extends Service {
                     Bundle bundle = new Bundle();
                     bundle.putString(EXTRA_CONTENT_MESSAGE_ADDRESS, url);
                     bundle.putString(EXTRA_CONTENT_MESSAGE_TEXT, text);
+                    if(names==null||names.isEmpty()){
+                        names=addressMac;
+                    }
                     bundle.putString(EXTRA_CONTENT_MESSAGE_USERNAME, names);
                     Intent intent = new Intent(MainActivity.LocalAction_RefreshUI);
                     intent.putExtras(bundle);
