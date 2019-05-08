@@ -1,11 +1,9 @@
 package com.example.a233.bluetooth_radio;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,12 +17,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
-import android.net.wifi.aware.WifiAwareManager;
 import android.net.wifi.p2p.WifiP2pManager;
-import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
-import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -80,7 +74,7 @@ import static android.widget.TextView.BufferType.EDITABLE;
 
 
 public class MainActivity extends AppCompatActivity {
-    public static final int serviceMaxRuntime = 300000;
+    public static final int serviceMaxRuntime = 120000;
     static final int BLUETOOTH_DISCOVERABLE_DURATION = 300;
     //Color of button
     static final int colorUnable = 0xFF666666;
@@ -91,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
     static final int REQUEST_CODE_SEND_MY_MASSAGE = 1001;
     static final int REQUEST_CODE_SEARCH_MY_MASSAGE = 1002;
     static final int REQUEST_CODE_ASK_Bluetooth_PERMISSION_TO_DISCOVER = 1003;
-    private static ButtonState myButtonState;
     private ListView myMainListView;
     private ListView listViewPeopleNearby;
     private MyListViewManager myListViewManager;
@@ -108,12 +101,17 @@ public class MainActivity extends AppCompatActivity {
     private Runnable timeRunable;
     Handler mainHandler;
     LocalBroadcastManager myLocalBroadcastManager;
-    BroadcastReceiver myReceiver;
+    static BroadcastReceiver myReceiver;
     boolean listViewStarFlag = false;
     boolean secondListViewStarFlag = false;
     boolean isCheckedAddID = false;
 
     WifiManager wifiManager;
+
+    //button
+    static Boolean boolBTN_Send_01;
+    static Boolean boolBTN_Cancel_02;
+    static Boolean boolBTN_Search_03;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,8 +127,6 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter filter= new IntentFilter(LocalAction_RefreshUI);
         filter.addAction(ServiceOnDestroy);
         myLocalBroadcastManager.registerReceiver(new LocalBroadcastReceiver(), filter);
-        myButtonState = ButtonState.CANCEL;
-        setButtonState(myButtonState);
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         mainHandler = new Handler();
     }
@@ -158,6 +154,17 @@ public class MainActivity extends AppCompatActivity {
         myViewAdapter = new viewAdapter(this, listViews, listTitles, null);
         myViewPage.setAdapter(myViewAdapter);
         myTabLyaout.setupWithViewPager(myViewPage);
+
+        boolBTN_Send_01 = false;
+        boolBTN_Cancel_02 = true;
+        boolBTN_Search_03= false;
+        Button btn_Send_01 = firstPage.findViewById(R.id.button_send);
+        Button btn_Cancel_02 = firstPage.findViewById(R.id.button_cancel);
+        Button btn_Search_03 = firstPage.findViewById(R.id.button_search);
+        btn_Send_01.setBackgroundColor(colorNormal);
+        btn_Search_03.setBackgroundColor(colorNormal);
+        btn_Cancel_02.setEnabled(false);
+        btn_Cancel_02.setVisibility(View.INVISIBLE);
     }
 
     void initTextView() {
@@ -247,7 +254,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        runCancelService();
+        setButtonState(ButtonState.CANCEL);
+        if(myReceiver!=null){
+            unregisterReceiver(myReceiver);
+        }
     }
 
     //After serviceMaxRuntime seconds stop service
@@ -255,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
         timeRunable = new Runnable() {
             @Override
             public void run() {
-                runCancelService();
+                setButtonState(ButtonState.CANCEL);
             }
         };
         mainHandler.postDelayed(timeRunable, serviceMaxRuntime);
@@ -274,14 +284,13 @@ public class MainActivity extends AppCompatActivity {
     //Onclick button Send
     public void sendMessage(View view) {
         hideKeyboard(view);
-        if (myButtonState == ButtonState.CANCEL ) {
-            if (!wifiManager.isWifiEnabled()) {
+        if (!wifiManager.isWifiEnabled()) {
 
-                wifiManager.setWifiEnabled(true);
-            } else {
-                runSendMessage();
-            }
+            wifiManager.setWifiEnabled(true);
+        } else {
+            runSendMessage();
         }
+
     }
 
     public void runSendMessage() {
@@ -296,10 +305,11 @@ public class MainActivity extends AppCompatActivity {
             }
             intent.putExtra(EXTRA_MESSAGE, message);
             startService(intent);
-            myButtonState = ButtonState.SEND;
-            setButtonState(myButtonState);
+            setButtonState(ButtonState.SEND);
             receiveSystemBroad();
-            setServiceRuntime();
+            if(!boolBTN_Search_03) {
+                setServiceRuntime();
+            }
         }
     }
 
@@ -313,12 +323,10 @@ public class MainActivity extends AppCompatActivity {
     //Onclick button Search
     public void searchMessage(View view) {
         hideKeyboard(view);
-        if (myButtonState == ButtonState.CANCEL) {
-            if (!wifiManager.isWifiEnabled()) {
-                wifiManager.setWifiEnabled(true);
-            } else {
-                runSearchMessage();
-            }
+        if (!wifiManager.isWifiEnabled()) {
+            wifiManager.setWifiEnabled(true);
+        } else {
+            runSearchMessage();
         }
     }
 
@@ -329,10 +337,11 @@ public class MainActivity extends AppCompatActivity {
                 ) {
             Intent intent = new Intent(this, ReceiveRadio_BLE.class);
             startService(intent);
-            myButtonState = ButtonState.SEARCH;
-            setButtonState(myButtonState);
+            setButtonState(ButtonState.SEARCH);
             receiveSystemBroad();
-            setServiceRuntime();
+            if(!boolBTN_Send_01) {
+                setServiceRuntime();
+            }
         }
     }
 
@@ -405,64 +414,49 @@ public class MainActivity extends AppCompatActivity {
 //    }
 
     public void cancelService(View view) {
-        runCancelService();
+        setButtonState(ButtonState.CANCEL);
     }
-
-    // Onclick Button Cancel
-    public void runCancelService() {
-        mainHandler.removeCallbacks(timeRunable);
-        if (myReceiver != null) {
-            unregisterReceiver(myReceiver);
-        }
-        if (myButtonState == ButtonState.SEND) {
-            Intent stopIntent = new Intent(this, ChangeNameOfWIFI.class);
-            stopService(stopIntent);
-            myButtonState = ButtonState.CANCEL;
-            setButtonState(myButtonState);
-        }
-        //TODO:Try BLE
-        else if (myButtonState == ButtonState.SEARCH) {
-            Intent stopIntent = new Intent(this, ReceiveRadio_BLE.class);
-            stopService(stopIntent);
-            myButtonState = ButtonState.CANCEL;
-            setButtonState(myButtonState);
-        }
-    }
-
     //Change color and state of button
     void setButtonState(ButtonState state) {
-        Button btn = firstPage.findViewById(R.id.button);
-        Button btn2 = firstPage.findViewById(R.id.button2);
-        Button btn3 = firstPage.findViewById(R.id.button3);
-        Boolean boolBTN1 = false;
-        Boolean boolBTN2 = false;
-        Boolean boolBTN3 = false;
+        Button btn_Send_01 = firstPage.findViewById(R.id.button_send);
+        Button btn_Search_03 = firstPage.findViewById(R.id.button_search);
         switch (state) {
             case SEND: {
-                boolBTN2 = true;
-                btn.setBackgroundColor(colorWork);
-                btn3.setBackgroundColor(colorUnable);
-                btn2.setBackgroundColor(colorNormal);
+                if(boolBTN_Send_01) {
+                    Intent stopIntent = new Intent(this, ChangeNameOfWIFI.class);
+                    stopService(stopIntent);
+                }
+                boolBTN_Send_01=!boolBTN_Send_01;
+                btn_Send_01.setBackgroundColor(boolBTN_Send_01?colorWork:colorNormal);
             }
             break;
             case SEARCH: {
-                boolBTN2 = true;
-                btn.setBackgroundColor(colorUnable);
-                btn3.setBackgroundColor(colorWork);
-                btn2.setBackgroundColor(colorNormal);
+                if(boolBTN_Search_03) {
+                    Intent stopIntent = new Intent(this, ReceiveRadio_BLE.class);
+                    stopService(stopIntent);
+                }
+                boolBTN_Search_03=!boolBTN_Search_03;
+                btn_Search_03.setBackgroundColor(boolBTN_Search_03?colorWork:colorNormal);
             }
             break;
             case CANCEL: {
-                boolBTN1 = true;
-                boolBTN3 = true;
-                btn.setBackgroundColor(colorNormal);
-                btn3.setBackgroundColor(colorNormal);
-                btn2.setBackgroundColor(colorUnable);
+                if(boolBTN_Send_01) {
+                    Intent stopIntent = new Intent(this, ChangeNameOfWIFI.class);
+                    stopService(stopIntent);
+                    boolBTN_Send_01 = !boolBTN_Send_01;
+                    btn_Send_01.setBackgroundColor(boolBTN_Send_01 ? colorWork : colorNormal);
+                }
+                if(boolBTN_Search_03) {
+                    Intent stopIntent = new Intent(this, ReceiveRadio_BLE.class);
+                    stopService(stopIntent);
+                    boolBTN_Search_03 = !boolBTN_Search_03;
+                    btn_Search_03.setBackgroundColor(boolBTN_Search_03 ? colorWork : colorNormal);
+                }
             }
         }
-        btn.setEnabled(boolBTN1);
-        btn2.setEnabled(boolBTN2);
-        btn3.setEnabled(boolBTN3);
+        if (!(boolBTN_Send_01||boolBTN_Search_03)&&timeRunable != null) {
+            mainHandler.removeCallbacks(timeRunable);
+        }
     }
 
     private void MainActivityDialog(Context context, String msg) {
@@ -481,7 +475,7 @@ public class MainActivity extends AppCompatActivity {
                 if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(intent.getAction())) {
                     if (wifiManager.getWifiState() != WifiManager.WIFI_STATE_ENABLED) {
                         wifiProblemNotification("WIFI Turned Off!");
-                        runCancelService();
+                        setButtonState(ButtonState.CANCEL);
                     }
                }
             }
@@ -548,8 +542,7 @@ public class MainActivity extends AppCompatActivity {
             if (ServiceOnDestroy.equals(intent.getAction())) {
                 Toast.makeText(getApplicationContext(),"Do  not exceed 280 bytes",Toast.LENGTH_LONG)
                         .show();
-                myButtonState = ButtonState.CANCEL;
-                setButtonState(myButtonState);
+                setButtonState(ButtonState.SEND);
             }
         }
     }
@@ -742,19 +735,10 @@ public class MainActivity extends AppCompatActivity {
                     String text = item.get("Bluetooth_item_content");
                     EditText editText = firstPage.findViewById(R.id.editText);
                     editText.setText(text, EDITABLE);
-                    if (myButtonState == ButtonState.SEARCH) {
-                        runCancelService();
-                        runSendMessage();
-                    } else if (myButtonState == ButtonState.SEND) {
-                        mainHandler.removeCallbacks(timeRunable);
-                        if (myReceiver != null) {
-                            unregisterReceiver(myReceiver);
-                        }
-                        runCancelService();
-                    } else {
-                        runSendMessage();
+                    if(boolBTN_Send_01) {
+                        setButtonState(ButtonState.SEND);
                     }
-
+                    runSendMessage();
                 }
             });
             return convertView;
