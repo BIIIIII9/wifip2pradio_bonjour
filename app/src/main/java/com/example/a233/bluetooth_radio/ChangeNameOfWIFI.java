@@ -2,6 +2,7 @@ package com.example.a233.bluetooth_radio;
 
 
 
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -10,9 +11,12 @@ import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
 import android.bluetooth.le.BluetoothLeAdvertiser;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -23,18 +27,24 @@ import android.text.format.DateUtils;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-public class ChangeNameOfBluetooth extends Service {
+public class ChangeNameOfWIFI extends Service {
     private  boolean workFlagMyThread;
     public static final int baseByteMsg=2;
     public static final int signalZero=0x20;
     private LocalBroadcastManager myLocalBroadcastManager;
     //    public static final byte[] Signal={(byte)0xef ,(byte)0xbf ,(byte)0xbd};
     private static  ParcelUuid MyUuid;
+
+    BroadcastReceiver myP2PReceiver;
+    WifiP2pManager manager;
+    WifiP2pManager.Channel channel;
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
@@ -44,27 +54,16 @@ public class ChangeNameOfBluetooth extends Service {
     public void onCreate(){
         super.onCreate();
         myLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        channel = manager.initialize(this, getMainLooper(), null);
     }
-    //TODO:Try BLE
-    private AdvertiseCallback mAdvertiseCallback = new AdvertiseCallback() {
-        @Override
-        public void onStartSuccess(AdvertiseSettings settingsInEffect) {
-            super.onStartSuccess(settingsInEffect);
-        }
-
-        @Override
-        public void onStartFailure(int errorCode) {
-            super.onStartFailure(errorCode);
-            onDestroy();
-        }
-    };
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         final String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
         MyUuid=ParcelUuid.fromString(UUID.randomUUID().toString());
         foregroundNotification();
-//        MyBluetoothMethodManager.openDiscoverable();TODO
-        final List<byte[]> listBytesMessage = Split(message, 10);
+        final List<byte[]> listBytesMessage = Split(message, 32);
+        discoverPeers();
         if(!(listBytesMessage==null)) {
             workFlagMyThread = true;
             Thread myThread = new Thread(new Runnable() {
@@ -85,6 +84,8 @@ public class ChangeNameOfBluetooth extends Service {
         else
         {
             //TODO:限制输入<128*248byte  把分隔程序split放到输入框
+            intent = new Intent(MainActivity.ServiceOnDestroy);
+            myLocalBroadcastManager.sendBroadcast(intent);
             onDestroy();
             return START_NOT_STICKY;
         }
@@ -93,43 +94,84 @@ public class ChangeNameOfBluetooth extends Service {
     public void onDestroy() {
         super.onDestroy();
         workFlagMyThread=false;
-        final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        final BluetoothLeAdvertiser mBluetoothLeAdvertiser = adapter.getBluetoothLeAdvertiser();
-        mBluetoothLeAdvertiser.stopAdvertising(mAdvertiseCallback);
-        MyBluetoothMethodManager.closeDiscoverable();
+        manager.stopPeerDiscovery(channel, null);
         stopForeground(true);
-        Intent intent = new Intent(MainActivity.ServiceOnDestroy);
-        myLocalBroadcastManager.sendBroadcast(intent);
+//        Intent intent = new Intent(MainActivity.ServiceOnDestroy);
+//        myLocalBroadcastManager.sendBroadcast(intent);
     }
     //Ever 10 millisecond change the name of Bluetooth
     public void startMyRadio(List<byte[]> listBytesMessage) throws InterruptedException {
-        final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        final BluetoothLeAdvertiser mBluetoothLeAdvertiser = adapter.getBluetoothLeAdvertiser();
-        AdvertiseSettings.Builder mstbuilder = new AdvertiseSettings.Builder();
-        mstbuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY);
-        mstbuilder.setConnectable(false);
-        mstbuilder.setTimeout(0);
-        final AdvertiseSettings settings = mstbuilder.build();
-
-
         for (int i = 0; (workFlagMyThread) && (i < listBytesMessage.size()); i++) {
             long startSystemTime = System.currentTimeMillis();
-            String name = new String(listBytesMessage.get(i));
-            adapter.setName(name);
-            while (!adapter.getName().equals(name)) {
-                Thread.sleep(5);
+            String name = null;
+            try {
+                name = new String(listBytesMessage.get(i),"utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
-            AdvertiseData advdata=new AdvertiseData.Builder().addServiceUuid(MyUuid).setIncludeTxPowerLevel(false).setIncludeDeviceName(true).build();
-            mBluetoothLeAdvertiser.startAdvertising(settings, advdata, mAdvertiseCallback);
-            Log.i("Start: ", adapter.getName());
-            Log.i("UUID: ", advdata.getServiceUuids().toString());
+            setDeviceName(name);
+            Thread.sleep(5);
             long endSystemTime = System.currentTimeMillis()-startSystemTime;
             Log.i("Stop: ", Long.toString(endSystemTime));
-            Thread.sleep(220);//312.5*4*8=10000 1.28*1000+(10000/1000)=1280+10
-            mBluetoothLeAdvertiser.stopAdvertising(mAdvertiseCallback);
+            Thread.sleep(500);//312.5*4*8=10000 1.28*1000+(10000/1000)=1280+10
+            //220
             endSystemTime = System.currentTimeMillis()-startSystemTime;
             Log.i("Stop: ", Long.toString(endSystemTime));
         }
+    }
+
+
+    void discoverPeers() {
+        manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.i("start","discover Peers success");
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Log.i("start","discover Peers fail"+reason);
+            }
+        });
+    }
+    public void setDeviceName(String devName) {
+        try {
+            Class[] paramTypes = new Class[3];
+            paramTypes[0] = WifiP2pManager.Channel.class;
+            paramTypes[1] = String.class;
+            paramTypes[2] = WifiP2pManager.ActionListener.class;
+            Method setDeviceName = manager.getClass().getMethod(
+                    "setDeviceName", paramTypes);
+            setDeviceName.setAccessible(true);
+
+            Object arglist[] = new Object[3];
+            arglist[0] = channel;
+            arglist[1] = devName;
+            arglist[2] = new WifiP2pManager.ActionListener() {
+
+                @Override
+                public void onSuccess() {
+                   Log.i("setname","setDeviceName succeeded");
+                }
+
+                @Override
+                public void onFailure(int reason) {
+                    Log.i("setname","setDeviceName failed "+reason);
+                }
+            };
+
+            setDeviceName.invoke(manager, arglist);
+
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
     }
     //Split the "String message" into Several arrays with appropriate length
     //Add  head-message in first 6 byte for each array
@@ -143,7 +185,7 @@ public class ChangeNameOfBluetooth extends Service {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        if (byteMessage_Be != null) {
+        if (byteMessage_Be != null&&byteMessage_Be.length<280) {
             int messageSerial = signalZero;//消息序号
             final int messageID = getMessageID();//消息ID
             final int messageTotal =getMessageTotal(__size,byteMessage_Be);

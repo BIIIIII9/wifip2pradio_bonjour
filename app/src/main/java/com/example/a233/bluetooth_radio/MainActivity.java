@@ -18,22 +18,21 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
+import android.net.wifi.aware.WifiAwareManager;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.text.Html;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -43,7 +42,6 @@ import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.text.style.URLSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Gravity;
@@ -60,6 +58,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
@@ -114,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     boolean secondListViewStarFlag = false;
     boolean isCheckedAddID = false;
 
+    WifiManager wifiManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,9 +126,12 @@ public class MainActivity extends AppCompatActivity {
         myMainListView = firstPage.findViewById(R.id.MyContentListView);
         listViewPeopleNearby = secondPage.findViewById(R.id.list_view_people_nearby);
         myLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
-        myLocalBroadcastManager.registerReceiver(new LocalBroadcastReceiver(), new IntentFilter(LocalAction_RefreshUI));
+        IntentFilter filter= new IntentFilter(LocalAction_RefreshUI);
+        filter.addAction(ServiceOnDestroy);
+        myLocalBroadcastManager.registerReceiver(new LocalBroadcastReceiver(), filter);
         myButtonState = ButtonState.CANCEL;
         setButtonState(myButtonState);
+        wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         mainHandler = new Handler();
     }
 
@@ -271,9 +274,10 @@ public class MainActivity extends AppCompatActivity {
     //Onclick button Send
     public void sendMessage(View view) {
         hideKeyboard(view);
-        if (myButtonState == ButtonState.CANCEL && MyBluetoothMethodManager.isBluetoothSupported()) {
-            if (!MyBluetoothMethodManager.isBluetoothEnabled()) {
-                requestBluetoothDiscoverable();
+        if (myButtonState == ButtonState.CANCEL ) {
+            if (!wifiManager.isWifiEnabled()) {
+
+                wifiManager.setWifiEnabled(true);
             } else {
                 runSendMessage();
             }
@@ -281,8 +285,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void runSendMessage() {
-        if (MyBluetoothMethodManager.isBluetoothEnabled()) {
-            Intent intent = new Intent(this, ChangeNameOfBluetooth.class);
+        if (wifiManager.isWifiEnabled()) {
+            Intent intent = new Intent(this, ChangeNameOfWIFI.class);
             EditText editText = firstPage.findViewById(R.id.editText);
             String message = editText.getText().toString();
             SharedPreferences sp = getSharedPreferences("TwitterID_Bluetooth", Context.MODE_PRIVATE);
@@ -299,19 +303,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void requestBluetoothDiscoverable() {
-        Intent requestBluetoothOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        requestBluetoothOn.setAction(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-        requestBluetoothOn.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, BLUETOOTH_DISCOVERABLE_DURATION);//BLUETOOTH_DISCOVERABLE_DURATION=300s
-        startActivityForResult(requestBluetoothOn, REQUEST_CODE_SEND_MY_MASSAGE);
-    }
+//    public void requestBluetoothDiscoverable() {
+//        Intent requestBluetoothOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//        requestBluetoothOn.setAction(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+//        requestBluetoothOn.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, BLUETOOTH_DISCOVERABLE_DURATION);//BLUETOOTH_DISCOVERABLE_DURATION=300s
+//        startActivityForResult(requestBluetoothOn, REQUEST_CODE_SEND_MY_MASSAGE);
+//    }
 
     //Onclick button Search
     public void searchMessage(View view) {
         hideKeyboard(view);
-        if (myButtonState == ButtonState.CANCEL && MyBluetoothMethodManager.isBluetoothSupported()) {
-            if (!MyBluetoothMethodManager.isBluetoothEnabled()) {
-                requestTurnOnBluetooth();
+        if (myButtonState == ButtonState.CANCEL) {
+            if (!wifiManager.isWifiEnabled()) {
+                wifiManager.setWifiEnabled(true);
             } else {
                 runSearchMessage();
             }
@@ -320,7 +324,9 @@ public class MainActivity extends AppCompatActivity {
 
     //TODO:Try BLE
     public void runSearchMessage() {
-        if (MyBluetoothMethodManager.isBluetoothEnabled() && checkPermission()) {
+        if (wifiManager.isWifiEnabled()
+//                && checkPermission()
+                ) {
             Intent intent = new Intent(this, ReceiveRadio_BLE.class);
             startService(intent);
             myButtonState = ButtonState.SEARCH;
@@ -330,22 +336,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void requestTurnOnBluetooth() {
-        Intent requestBluetoothOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(requestBluetoothOn, REQUEST_CODE_SEARCH_MY_MASSAGE);
-    }
+//    public void requestTurnOnBluetooth() {
+//        Intent requestBluetoothOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//        startActivityForResult(requestBluetoothOn, REQUEST_CODE_SEARCH_MY_MASSAGE);
+//    }
 
     //If version Android of target phone more than or equal 6.0 ,request permission
-    public boolean checkPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            String permission = Manifest.permission.ACCESS_COARSE_LOCATION;
-            if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{permission}, REQUEST_CODE_ASK_Bluetooth_PERMISSION_TO_DISCOVER);
-                return false;
-            }
-        }
-        return true;
-    }
+//    public boolean checkPermission() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            String permission = Manifest.permission.ACCESS_COARSE_LOCATION;
+//            if (checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+//                requestPermissions(new String[]{permission}, REQUEST_CODE_ASK_Bluetooth_PERMISSION_TO_DISCOVER);
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
     //Receive result of request that turn on bluetooth,change to discoverable
     @Override
@@ -378,26 +384,25 @@ public class MainActivity extends AppCompatActivity {
         loginButton.onActivityResult(requestCode, resultCode, data);
     }
 
-    //TODO:BLE
-    //Receive result of request that permission for Android 6.0
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE_ASK_Bluetooth_PERMISSION_TO_DISCOVER) {
-            switch (grantResults[0]) {
-                case PackageManager.PERMISSION_GRANTED: {
-                    runSearchMessage();
-                }
-                break;
-
-                case PackageManager.PERMISSION_DENIED: {
-                    MainActivityDialog(MainActivity.this, "Can not get permission to search bluetooth device!");
-                }
-                break;
-                default:
-                    break;
-            }
-        }
-    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        if (requestCode == REQUEST_CODE_ASK_Bluetooth_PERMISSION_TO_DISCOVER) {
+//            switch (grantResults[0]) {
+//                case PackageManager.PERMISSION_GRANTED: {
+//                    runSearchMessage();
+//                }
+//                break;
+//
+//                case PackageManager.PERMISSION_DENIED: {
+//                    MainActivityDialog(MainActivity.this, "Can not get permission to search bluetooth device!");
+//                }
+//                break;
+//                default:
+//                    break;
+//            }
+//        }
+//    }
 
     public void cancelService(View view) {
         runCancelService();
@@ -410,7 +415,7 @@ public class MainActivity extends AppCompatActivity {
             unregisterReceiver(myReceiver);
         }
         if (myButtonState == ButtonState.SEND) {
-            Intent stopIntent = new Intent(this, ChangeNameOfBluetooth.class);
+            Intent stopIntent = new Intent(this, ChangeNameOfWIFI.class);
             stopService(stopIntent);
             myButtonState = ButtonState.CANCEL;
             setButtonState(myButtonState);
@@ -469,31 +474,23 @@ public class MainActivity extends AppCompatActivity {
 
     //Listen to System Broadcast, if bluetooth turned off occurred other problem , stop Service
     void receiveSystemBroad() {
-        IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
-        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        IntentFilter filter = new IntentFilter(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         myReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
-                    int nowStateBluetooth = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.STATE_OFF);
-                    if (nowStateBluetooth == BluetoothAdapter.STATE_OFF) {
-                        bluetoothProblemNotification("Bluetooth Turned Off!");
+                if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(intent.getAction())) {
+                    if (wifiManager.getWifiState() != WifiManager.WIFI_STATE_ENABLED) {
+                        wifiProblemNotification("WIFI Turned Off!");
                         runCancelService();
                     }
-                } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(intent.getAction())) {
-                    int nowDiscoverableBluetooth = intent.getIntExtra(BluetoothAdapter.EXTRA_SCAN_MODE, BluetoothAdapter.SCAN_MODE_NONE);
-                    if (nowDiscoverableBluetooth == BluetoothAdapter.SCAN_MODE_CONNECTABLE) {
-                        bluetoothProblemNotification("Bluetooth Is Not Discoverable!");
-                        runCancelService();
-                    }
-                }
+               }
             }
         };
         registerReceiver(myReceiver, filter);
     }
 
-    //If occur problem of Bluetooth state,notify user
-    void bluetoothProblemNotification(String errorText) {
+    //If occur problem of wifi state,notify user
+    void wifiProblemNotification(String errorText) {
         final String channelID = "com.example.a233.bluetooth_radio.unableResolveBluetoothProblem";
         NotificationManager notifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelID)
@@ -549,12 +546,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             if (ServiceOnDestroy.equals(intent.getAction())) {
+                Toast.makeText(getApplicationContext(),"Do  not exceed 280 bytes",Toast.LENGTH_LONG)
+                        .show();
                 myButtonState = ButtonState.CANCEL;
                 setButtonState(myButtonState);
             }
         }
     }
-
     //    private class MyListViewManager{
 //        private final static String str_address="Bluetooth_name";
 //        private final static String str_time="Bluetooth_time";

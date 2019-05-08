@@ -5,10 +5,8 @@ package com.example.a233.bluetooth_radio;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
@@ -18,8 +16,10 @@ import android.content.Intent;
 
 
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -29,7 +29,6 @@ import android.os.ParcelUuid;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.view.ViewDebug;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -40,14 +39,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-
-import retrofit2.http.Url;
-
-import static android.bluetooth.le.ScanSettings.CALLBACK_TYPE_ALL_MATCHES;
 
 public class ReceiveRadio_BLE extends Service {
 
@@ -60,32 +53,13 @@ public class ReceiveRadio_BLE extends Service {
     public static final String EXTRA_CONTENT_MESSAGE_ADDRESS="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_ADDRESS";
     public static final String EXTRA_CONTENT_MESSAGE_TEXT="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_TEXT";
     public static final String EXTRA_CONTENT_MESSAGE_USERNAME="com.example.a233.bluetooth_radio.EXTRA_CONTENT_MESSAGE_USERNAME";
-    private ScanCallback mLeScanCallback =
-            new ScanCallback() {
-                @Override
-                public void onScanResult (int callbackType ,ScanResult result) {
-                    ScanRecord record = result.getScanRecord();
-                   List<ParcelUuid> serviceUuids=record.getServiceUuids();
-                   if(record.getDeviceName()!=null) {
-                       Log.i("ScanResult result", result.toString());
-                   }
-                  if (serviceUuids!=null&&serviceUuids.size()==1) {
-//                       if (struct.text!=null&&struct.address!=null) {
-                      Message msg = new Message();
-                      MsgStruct struct = new MsgStruct();
-                      struct.text = record.getDeviceName();
-                      struct.address = serviceUuids.get(0).toString();
-                        msg.obj = struct;
-                        msg.what = FOUND_MESSAGE;
-                        myHandler.sendMessage(msg);
-                        if (struct.text != null) {
-                            Log.i("broadcastFoundMessage", struct.text);
-                            Log.i("MAC", struct.address);
-                        }
-                  }
-                }
-            };
 
+    WifiP2pManager manager;
+    WifiP2pManager.Channel channel;
+    IntentFilter filter = new IntentFilter(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+    List<WifiP2pDevice> list = new ArrayList<WifiP2pDevice>();
+    BroadcastReceiver myP2PReceiver;
+    long startSystemTime = System.currentTimeMillis();
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
@@ -94,14 +68,47 @@ public class ReceiveRadio_BLE extends Service {
     public void onCreate(){
         super.onCreate();
         myLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        channel = manager.initialize(this, getMainLooper(), null);
+        initMyP2PReceiver();
+    }
+    void initMyP2PReceiver(){
+        myP2PReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                WifiP2pDeviceList mPeers = intent.getParcelableExtra(WifiP2pManager.EXTRA_P2P_DEVICE_LIST);
+                list.clear(); //清除旧的信息
+                list.addAll(mPeers.getDeviceList()); //更新信息
+                for(WifiP2pDevice item : list ){
+                    String deviceName=item.deviceName;
+                    String deviceAddress=item.deviceAddress;
+                    if(deviceName!=null) {
+//                        Log.i("ScanResult result", item.toString());
+                        long endSystemTime = System.currentTimeMillis()-startSystemTime;
+                        startSystemTime=System.currentTimeMillis();
+                        Log.i("ScanResult result", String.valueOf(endSystemTime));
+                        if (deviceAddress!=null) {
+                            Message msg = new Message();
+                            MsgStruct struct = new MsgStruct();
+                            struct.text = deviceName;
+                            struct.address = deviceAddress;
+                            msg.obj = struct;
+                            msg.what = FOUND_MESSAGE;
+                            myHandler.sendMessage(msg);
+                            if (struct.text != null) {
+                                Log.i("broadcastFoundMessage", struct.text);
+                                Log.i("MAC", struct.address);
+                            }
+                        }
+                    }
+                }
+            }
+        };
     }
     public int onStartCommand(Intent intent, int flags, int startId) {
         foregroundNotification();
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        BluetoothLeScanner scanner=adapter.getBluetoothLeScanner();
-        ScanSettings.Builder scanSettingsBuilder= new ScanSettings.Builder();
-        scanSettingsBuilder.setScanMode( ScanSettings.SCAN_MODE_LOW_LATENCY);
-        scanner.startScan(null,scanSettingsBuilder.build(),mLeScanCallback);
+        discoverPeers();
+        registerReceiver(myP2PReceiver, filter);
         Thread myThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -118,11 +125,12 @@ public class ReceiveRadio_BLE extends Service {
                                 } catch (UnsupportedEncodingException e) {
                                     e.printStackTrace();
                                 }
-                                Log.i("MyBluetoothMethod", msgText.length+"handleMessage: "+contentMsg.text);
+
                                 if (null!=msgText  &&
-                                        msgText.length >ChangeNameOfBluetooth.baseByteMsg &&//控制最小长度
+                                        msgText.length > ChangeNameOfWIFI.baseByteMsg &&//控制最小长度
                                         isHaveSignal(msgText)
                                         ) {
+                                    Log.i("WifiP2PMethod", msgText.length+"handleMessage: "+contentMsg.text);
                                     if (msgStore.containsKey(contentMsg.address)) {
                                         msgStore.get(contentMsg.address).setMessage(msgText);
                                     } else {
@@ -142,10 +150,23 @@ public class ReceiveRadio_BLE extends Service {
         myThread.start();
         return START_REDELIVER_INTENT;
     }
+    void discoverPeers() {
+        manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.i("start","discover Peers success");
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Log.i("start","discover Peers fail"+reason);
+            }
+        });
+    }
     //Check the first 3 byte in array ,is it the REPLACEMENT CHARACTER in UTF8{(byte)0xef ,(byte)0xbf ,(byte)0xbd}
     boolean isHaveSignal(byte[] source){
         boolean flag=false;
-//        final byte[] array=ChangeNameOfBluetooth.Signal;
+//        final byte[] array=ChangeNameOfWIFI.Signal;
 //        if(array.length<source.length) {
 //            flag=true;
 //            for (int i = 0; i <array.length;i++){
@@ -154,7 +175,7 @@ public class ReceiveRadio_BLE extends Service {
 //                }
 //            }
 //        }
-        int base =ChangeNameOfBluetooth.baseByteMsg;
+        int base = ChangeNameOfWIFI.baseByteMsg;
         if(source[base-2]<=source[base-1]
 //                &&(0xFF&source[base-3])<0x7F
                 ) {
@@ -166,23 +187,24 @@ public class ReceiveRadio_BLE extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-        BluetoothLeScanner scanner=adapter.getBluetoothLeScanner();
-        scanner.stopScan(mLeScanCallback);
+        manager.stopPeerDiscovery(channel, null);
         stopForeground(true);
         mLooper.quit();
+        if (myP2PReceiver != null) {
+            unregisterReceiver(myP2PReceiver);
+        }
         if(foundReceiver!=null) {
             unregisterReceiver(foundReceiver);
         }
-        Intent intent = new Intent(MainActivity.ServiceOnDestroy);
-        myLocalBroadcastManager.sendBroadcast(intent);
+//        Intent intent = new Intent(MainActivity.ServiceOnDestroy);
+//        myLocalBroadcastManager.sendBroadcast(intent);
     }
     //Run service on foreground
     private void foregroundNotification() {
         final String channelID = "com.example.a233.Receive_radio.foregroundNotification";
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelID)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
-                .setContentTitle("ReceiveBluetoothRadio")
+                .setContentTitle("ReceiveWifiP2PRadio")
                 .setContentText("Receive broadcast");
 
         Intent intent = new Intent(this, MainActivity.class);
@@ -198,22 +220,24 @@ public class ReceiveRadio_BLE extends Service {
     class MsgBlueRadio {
         private String addressMac;
         private int messageTotal;
-        //       private int messageID ;
+        private int messageID ;
         private int localMessageTotal;
         private List<byte[]> messageBodyList;
+        long start;
 
         MsgBlueRadio(String MAC) {
             this.messageTotal = -1;
-//            this.messageID=-1;
+            this.messageID=-1;
             this.messageBodyList = null;
             this.localMessageTotal = 0;
             this.addressMac = MAC;
+            this.start=System.currentTimeMillis();
         }
 
         void setMessage(byte[] msg) {
             final int length = msg.length;
-            final int zero = ChangeNameOfBluetooth.signalZero;
-            final int base = ChangeNameOfBluetooth.baseByteMsg;
+            final int zero = ChangeNameOfWIFI.signalZero;
+            final int base = ChangeNameOfWIFI.baseByteMsg;
             if (length > base) {
                 setMessageBody((msg[base - 2] & 0xFF) - zero, (msg[base - 1] & 0xFF) - zero,
 //                        (msg[base-1]&0xFF)-zero,
@@ -223,7 +247,7 @@ public class ReceiveRadio_BLE extends Service {
 
         //Remove the signal bytes(First 6 byte)
         private byte[] editMessage(byte[] newMessageBody) {
-            final int base = ChangeNameOfBluetooth.baseByteMsg;
+            final int base = ChangeNameOfWIFI.baseByteMsg;
             byte[] msg = new byte[newMessageBody.length - base];
             System.arraycopy(newMessageBody, base, msg, 0, msg.length);
             return msg;
@@ -251,6 +275,8 @@ public class ReceiveRadio_BLE extends Service {
                 this.messageBodyList.set(newSerial, messageBody);
                 this.localMessageTotal++;
                 if (localMessageTotal == messageTotal) {
+                    long endSystemTime = System.currentTimeMillis()-start;
+                    Log.i("Stop: ", Long.toString(endSystemTime));
                     String text = byteStitching(this.messageBodyList);
                     final String homePageUrl = getHomePageUrl(text);
                     String url=homePageUrl;
