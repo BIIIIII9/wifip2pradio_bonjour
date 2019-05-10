@@ -294,7 +294,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void runSendMessage() {
-        if (wifiManager.isWifiEnabled()) {
+        if (wifiManager.isWifiEnabled()&&
+                setButtonState(ButtonState.SEND)) {
             Intent intent = new Intent(this, ChangeNameOfWIFI.class);
             EditText editText = firstPage.findViewById(R.id.editText);
             String message = editText.getText().toString();
@@ -305,7 +306,6 @@ public class MainActivity extends AppCompatActivity {
             }
             intent.putExtra(EXTRA_MESSAGE, message);
             startService(intent);
-            setButtonState(ButtonState.SEND);
             receiveSystemBroad();
             if(!boolBTN_Search_03) {
                 setServiceRuntime();
@@ -334,10 +334,10 @@ public class MainActivity extends AppCompatActivity {
     public void runSearchMessage() {
         if (wifiManager.isWifiEnabled()
 //                && checkPermission()
+                &&setButtonState(ButtonState.SEARCH)
                 ) {
             Intent intent = new Intent(this, ReceiveRadio_BLE.class);
             startService(intent);
-            setButtonState(ButtonState.SEARCH);
             receiveSystemBroad();
             if(!boolBTN_Send_01) {
                 setServiceRuntime();
@@ -417,7 +417,7 @@ public class MainActivity extends AppCompatActivity {
         setButtonState(ButtonState.CANCEL);
     }
     //Change color and state of button
-    void setButtonState(ButtonState state) {
+    boolean setButtonState(ButtonState state) {
         Button btn_Send_01 = firstPage.findViewById(R.id.button_send);
         Button btn_Search_03 = firstPage.findViewById(R.id.button_search);
         switch (state) {
@@ -428,8 +428,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 boolBTN_Send_01=!boolBTN_Send_01;
                 btn_Send_01.setBackgroundColor(boolBTN_Send_01?colorWork:colorNormal);
+                if (!(boolBTN_Send_01||boolBTN_Search_03)&&timeRunable != null) {
+                    mainHandler.removeCallbacks(timeRunable);
+                }
+                return boolBTN_Send_01;
             }
-            break;
             case SEARCH: {
                 if(boolBTN_Search_03) {
                     Intent stopIntent = new Intent(this, ReceiveRadio_BLE.class);
@@ -437,8 +440,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 boolBTN_Search_03=!boolBTN_Search_03;
                 btn_Search_03.setBackgroundColor(boolBTN_Search_03?colorWork:colorNormal);
+                if (!(boolBTN_Send_01||boolBTN_Search_03)&&timeRunable != null) {
+                    mainHandler.removeCallbacks(timeRunable);
+                }
+                return boolBTN_Search_03;
             }
-            break;
             case CANCEL: {
                 if(boolBTN_Send_01) {
                     Intent stopIntent = new Intent(this, ChangeNameOfWIFI.class);
@@ -452,11 +458,13 @@ public class MainActivity extends AppCompatActivity {
                     boolBTN_Search_03 = !boolBTN_Search_03;
                     btn_Search_03.setBackgroundColor(boolBTN_Search_03 ? colorWork : colorNormal);
                 }
+                if (!(boolBTN_Send_01||boolBTN_Search_03)&&timeRunable != null) {
+                    mainHandler.removeCallbacks(timeRunable);
+                }
+                return !(boolBTN_Send_01||boolBTN_Search_03);
             }
         }
-        if (!(boolBTN_Send_01||boolBTN_Search_03)&&timeRunable != null) {
-            mainHandler.removeCallbacks(timeRunable);
-        }
+        return false;
     }
 
     private void MainActivityDialog(Context context, String msg) {
