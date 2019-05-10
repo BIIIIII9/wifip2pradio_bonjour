@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -31,16 +32,20 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
 
 public class ChangeNameOfWIFI extends Service {
     private  boolean workFlagMyThread;
-    public static final int baseByteMsg=2;
+    public static final int baseByteMsg=3;
     public static final int signalZero=0x20;
     private LocalBroadcastManager myLocalBroadcastManager;
     //    public static final byte[] Signal={(byte)0xef ,(byte)0xbf ,(byte)0xbd};
     private static  ParcelUuid MyUuid;
+    ArrayList<WifiP2pDnsSdServiceInfo> myListServiceInfo;
 
     BroadcastReceiver myP2PReceiver;
     WifiP2pManager manager;
@@ -53,26 +58,26 @@ public class ChangeNameOfWIFI extends Service {
     @Override
     public void onCreate(){
         super.onCreate();
-        myLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
-        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-        channel = manager.initialize(this, getMainLooper(), null);
+        myListServiceInfo=new ArrayList<>();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         final String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
         MyUuid=ParcelUuid.fromString(UUID.randomUUID().toString());
         foregroundNotification();
-        final List<byte[]> listBytesMessage = Split(message, 32);
-        discoverPeers();
-        if(!(listBytesMessage==null)) {
+//        final List<byte[]> listBytesMessage = Split(message, 32);
+        if(!(message==null)) {
+            startDiscoverWifiP2PService(message);
             workFlagMyThread = true;
             Thread myThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     while (workFlagMyThread) {
                         try {
-                            startMyRadio(listBytesMessage);
-                        } catch (InterruptedException e) {
+                            manager.stopPeerDiscovery(channel,null);
+                            discoverPeers();
+                            Thread.sleep(20000);
+                        }catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
@@ -90,10 +95,36 @@ public class ChangeNameOfWIFI extends Service {
             return START_NOT_STICKY;
         }
     }
+    void startDiscoverWifiP2PService(final String message) {
+        myLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+        manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+        channel = manager.initialize(this, getMainLooper(), null);
+        manager.clearLocalServices(channel, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                final List<byte[]> listBytesMessage = Split(message, 30);
+                if (listBytesMessage != null) {
+                    for (byte[] item : listBytesMessage) {
+                        startRegistration(new String(item));
+                    }
+                }
+                Log.i("clearLocalServices", "onSuccess: ");
+            }
+
+            @Override
+            public void onFailure(int reason) {
+                Log.i("clearLocalServices", "onFailure: " + reason);
+            }
+        });
+        discoverPeers();
+    }
     @Override
     public void onDestroy() {
         super.onDestroy();
         workFlagMyThread=false;
+        for(WifiP2pDnsSdServiceInfo item : myListServiceInfo){
+            manager.removeLocalService(channel,item,null);
+        }
         manager.stopPeerDiscovery(channel, null);
         stopForeground(true);
 //        Intent intent = new Intent(MainActivity.ServiceOnDestroy);
@@ -119,18 +150,16 @@ public class ChangeNameOfWIFI extends Service {
             Log.i("Stop: ", Long.toString(endSystemTime));
         }
     }
-
-
     void discoverPeers() {
         manager.discoverPeers(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                Log.i("start","discover Peers success");
+                Log.i("start wifi-direct radio","start discover  success");
             }
 
             @Override
             public void onFailure(int reason) {
-                Log.i("start","discover Peers fail"+reason);
+                Log.i("start wifi-direct radio","start discover  fail"+reason);
             }
         });
     }
@@ -173,6 +202,24 @@ public class ChangeNameOfWIFI extends Service {
         }
 
     }
+    void startRegistration(String devName) {
+        //  Create a string map containing information about your service.
+        HashMap<String,String> record = new HashMap<>();
+        record.put("", devName);
+        final WifiP2pDnsSdServiceInfo serviceInfo =
+                WifiP2pDnsSdServiceInfo.newInstance(UUID.randomUUID().toString(), "_myWifiP2pRadio._tcp", record);
+        myListServiceInfo.add(serviceInfo);
+        manager.addLocalService(channel, serviceInfo, new WifiP2pManager.ActionListener() {
+            @Override
+            public void onSuccess() {
+                Log.i("addLocalService", "onSuccess: "+serviceInfo.toString());
+            }
+            @Override
+            public void onFailure(int reason) {
+                Log.i("add localService", "onFailure: "+reason);
+            }
+        });
+    }
     //Split the "String message" into Several arrays with appropriate length
     //Add  head-message in first 6 byte for each array
     //[0][1][2]{(byte)0xef ,(byte)0xbf ,(byte)0xbd}-----------REPLACEMENT CHARACTER in UTF8
@@ -204,10 +251,10 @@ public class ChangeNameOfWIFI extends Service {
                     }
                     byte[] s = new byte[contentSize+baseByteMsg];
                     System.arraycopy(byteMessage_Be, lang, s, baseByteMsg, contentSize);
-//                        System.arraycopy(Signal, 0, s, 0, Signal.length);
-                    s[baseByteMsg - 2] = (byte)messageSerial;
-                    s[baseByteMsg - 1] = (byte)messageTotal;
-//                      s[baseByteMsg - 1] = (byte)messageID;
+ //                      System.arraycopy(Signal, 0, s, 0, Signal.length);
+                    s[baseByteMsg - 3] = (byte)messageSerial;
+                    s[baseByteMsg - 2] = (byte)messageTotal;
+                    s[baseByteMsg - 1] = (byte)messageID;
                     list.add(s);
                     lang+=contentSize;
                     messageSerial++;
@@ -216,9 +263,9 @@ public class ChangeNameOfWIFI extends Service {
                 byte[] s = new byte[byteMessage_Be.length-lang+baseByteMsg];
                 System.arraycopy(byteMessage_Be, lang, s, baseByteMsg, byteMessage_Be.length-lang);
 //                System.arraycopy(Signal, 0, s, 0, Signal.length);
-                s[baseByteMsg - 2] = (byte)messageSerial;
-                s[baseByteMsg - 1] = (byte)messageTotal;
-//                s[baseByteMsg - 1] = (byte)messageID;
+                s[baseByteMsg - 3] = (byte)messageSerial;
+                s[baseByteMsg - 2] = (byte)messageTotal;
+                s[baseByteMsg - 1] = (byte)messageID;
                 list.add(s);
                 return list;
             }
