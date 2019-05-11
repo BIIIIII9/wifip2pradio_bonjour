@@ -59,15 +59,16 @@ public class ChangeNameOfWIFI extends Service {
     public void onCreate(){
         super.onCreate();
         myListServiceInfo=new ArrayList<>();
+        myLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         final String message = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
         MyUuid=ParcelUuid.fromString(UUID.randomUUID().toString());
         foregroundNotification();
-//        final List<byte[]> listBytesMessage = Split(message, 32);
-        if(!(message==null)) {
-            startDiscoverWifiP2PService(message);
+        final List<byte[]> listBytesMessage = Split(message, 254);
+        if(!(message==null||listBytesMessage==null)) {
+            startDiscoverWifiP2PService(listBytesMessage);
             workFlagMyThread = true;
             Thread myThread = new Thread(new Runnable() {
                 @Override
@@ -91,23 +92,21 @@ public class ChangeNameOfWIFI extends Service {
             //TODO:限制输入<128*248byte  把分隔程序split放到输入框
             intent = new Intent(MainActivity.ServiceOnDestroy);
             myLocalBroadcastManager.sendBroadcast(intent);
-            onDestroy();
             return START_NOT_STICKY;
         }
     }
-    void startDiscoverWifiP2PService(final String message) {
-        myLocalBroadcastManager = LocalBroadcastManager.getInstance(this);
+    void startDiscoverWifiP2PService(final List<byte[]> message) {
         manager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         channel = manager.initialize(this, getMainLooper(), null);
         manager.clearLocalServices(channel, new WifiP2pManager.ActionListener() {
             @Override
             public void onSuccess() {
-                final List<byte[]> listBytesMessage = Split(message, 30);
-                if (listBytesMessage != null) {
-                    for (byte[] item : listBytesMessage) {
-                        startRegistration(new String(item));
-                    }
-                }
+//                final List<byte[]> listBytesMessage = Split(message, 30);
+//                if (listBytesMessage != null) {
+//                    for (byte[] item : listBytesMessage) {
+//                        startRegistration(new String(item));
+//                    }
+//                }
                 Log.i("clearLocalServices", "onSuccess: ");
             }
 
@@ -116,16 +115,26 @@ public class ChangeNameOfWIFI extends Service {
                 Log.i("clearLocalServices", "onFailure: " + reason);
             }
         });
+        if (message != null) {
+            for (byte[] item : message) {
+                try {
+                    String text=new String(item,"utf8");
+                    startRegistration(text);
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         discoverPeers();
     }
     @Override
     public void onDestroy() {
         super.onDestroy();
         workFlagMyThread=false;
-        for(WifiP2pDnsSdServiceInfo item : myListServiceInfo){
-            manager.removeLocalService(channel,item,null);
+        if(channel!=null) {
+            manager.clearLocalServices(channel, null);
+            manager.stopPeerDiscovery(channel, null);
         }
-        manager.stopPeerDiscovery(channel, null);
         stopForeground(true);
 //        Intent intent = new Intent(MainActivity.ServiceOnDestroy);
 //        myLocalBroadcastManager.sendBroadcast(intent);
@@ -232,7 +241,7 @@ public class ChangeNameOfWIFI extends Service {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        if (byteMessage_Be != null&&byteMessage_Be.length<280) {
+        if (byteMessage_Be != null&&byteMessage_Be.length<400) {
             int messageSerial = signalZero;//消息序号
             final int messageID = getMessageID();//消息ID
             final int messageTotal =getMessageTotal(__size,byteMessage_Be);
